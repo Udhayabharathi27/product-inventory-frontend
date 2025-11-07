@@ -3,8 +3,8 @@ import axios from 'axios'
 import './App.css'
 
 // In App.jsx
-const API_BASE_URL = "https://product-inventory-backend-eg9l.onrender.com";
-
+// Replace the API_BASE_URL with your live backend
+const API_BASE_URL = 'https://product-inventory-backend-eg9l.onrender.com/api';
 // Dashboard Component with Graphs
 function DashboardPage({ inventory, totalItems, totalValue, lowStockItems, recentItems, getCategoryIcon }) {
   // Calculate data for charts
