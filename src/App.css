@@ -489,16 +489,32 @@
   background: #d1fae5;
 }
 
+.summary-card.paid .summary-card-icon {
+  color: #047857;
+}
+
 .summary-card.unpaid {
   background: #fef3c7;
+}
+
+.summary-card.unpaid .summary-card-icon {
+  color: #b45309;
 }
 
 .summary-card.overdue {
   background: #fee2e2;
 }
 
+.summary-card.overdue .summary-card-icon {
+  color: #dc2626;
+}
+
 .summary-card.draft {
   background: #dbeafe;
+}
+
+.summary-card.draft .summary-card-icon {
+  color: #1d4ed8;
 }
 
 .summary-card-icon {
@@ -1944,9 +1960,17 @@
   border-color: #047857;
 }
 
+.app.dark .summary-card.paid .summary-card-icon {
+  color: #5eead4;
+}
+
 .app.dark .summary-card.unpaid {
   background: #78350f;
   border-color: #92400e;
+}
+
+.app.dark .summary-card.unpaid .summary-card-icon {
+  color: #fbbf24;
 }
 
 .app.dark .summary-card.overdue {
@@ -1954,9 +1978,17 @@
   border-color: #991b1b;
 }
 
+.app.dark .summary-card.overdue .summary-card-icon {
+  color: #fca5a5;
+}
+
 .app.dark .summary-card.draft {
   background: #1e3a8a;
   border-color: #2563eb;
+}
+
+.app.dark .summary-card.draft .summary-card-icon {
+  color: #bfdbfe;
 }
 
 .app.dark .summary-card-label {

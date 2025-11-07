@@ -32,6 +32,15 @@ import {
 
 const API_BASE_URL = 'https://product-inventory-backend-eg9l.onrender.com/api'
 
+const NAV_ITEMS = [
+  { key: 'Dashboard', label: 'Dashboard', icon: FaChartBar, color: '#6366f1' },
+  { key: 'All Items', label: 'All Items', icon: FaList, color: '#0ea5e9' },
+  { key: 'Low Stock', label: 'Low Stock', icon: FaExclamationTriangle, color: '#f97316' },
+  { key: 'Suppliers', label: 'Suppliers', icon: FaBuilding, color: '#14b8a6' },
+  { key: 'Reports', label: 'Reports', icon: FaChartLine, color: '#22c55e' },
+  { key: 'Settings', label: 'Settings', icon: FaCog, color: '#8b5cf6' }
+]
+
 // Dashboard Component with Graphs
 function DashboardPage({ inventory, totalItems, totalValue, lowStockItems, recentItems, getCategoryIcon }) {
   // Calculate data for charts
@@ -1022,66 +1031,28 @@ function App() {
           </div>
         )}
         <nav className="sidebar-nav">
-          <button
-            className={`nav-item ${activeNav === 'Dashboard' ? 'active' : ''}`}
-            onClick={() => {
-              setActiveNav('Dashboard')
-              if (isMobile) setSidebarCollapsed(true)
-            }}
-          >
-            <span className="nav-icon"><FaChartBar /></span>
-            <span className="nav-text">Dashboard</span>
-          </button>
-          <button
-            className={`nav-item ${activeNav === 'All Items' ? 'active' : ''}`}
-            onClick={() => {
-              setActiveNav('All Items')
-              if (isMobile) setSidebarCollapsed(true)
-            }}
-          >
-            <span className="nav-icon"><FaList /></span>
-            <span className="nav-text">All Items</span>
-          </button>
-          <button
-            className={`nav-item ${activeNav === 'Low Stock' ? 'active' : ''}`}
-            onClick={() => {
-              setActiveNav('Low Stock')
-              if (isMobile) setSidebarCollapsed(true)
-            }}
-          >
-            <span className="nav-icon"><FaExclamationTriangle /></span>
-            <span className="nav-text">Low Stock</span>
-          </button>
-          <button
-            className={`nav-item ${activeNav === 'Suppliers' ? 'active' : ''}`}
-            onClick={() => {
-              setActiveNav('Suppliers')
-              if (isMobile) setSidebarCollapsed(true)
-            }}
-          >
-            <span className="nav-icon"><FaBuilding /></span>
-            <span className="nav-text">Suppliers</span>
-          </button>
-          <button
-            className={`nav-item ${activeNav === 'Reports' ? 'active' : ''}`}
-            onClick={() => {
-              setActiveNav('Reports')
-              if (isMobile) setSidebarCollapsed(true)
-            }}
-          >
-            <span className="nav-icon"><FaChartLine /></span>
-            <span className="nav-text">Reports</span>
-          </button>
-          <button
-            className={`nav-item ${activeNav === 'Settings' ? 'active' : ''}`}
-            onClick={() => {
-              setActiveNav('Settings')
-              if (isMobile) setSidebarCollapsed(true)
-            }}
-          >
-            <span className="nav-icon"><FaCog /></span>
-            <span className="nav-text">Settings</span>
-          </button>
+          {NAV_ITEMS.map(item => {
+            const Icon = item.icon
+            const isActive = activeNav === item.key
+            return (
+              <button
+                key={item.key}
+                className={`nav-item ${item.key.replace(/\s+/g, '-').toLowerCase()} ${isActive ? 'active' : ''}`}
+                onClick={() => {
+                  setActiveNav(item.key)
+                  if (isMobile) setSidebarCollapsed(true)
+                }}
+              >
+                <span
+                  className="nav-icon"
+                  style={{ color: isActive ? '#ffffff' : item.color }}
+                >
+                  <Icon />
+                </span>
+                <span className="nav-text">{item.label}</span>
+              </button>
+            )
+          })}
         </nav>
       </aside>
 
@@ -1100,54 +1071,33 @@ function App() {
       {/* Bottom Navigation Bar for Mobile */}
       {isMobile && (
         <nav className="bottom-nav">
-          <button
-            className={`bottom-nav-item ${activeNav === 'Dashboard' ? 'active' : ''}`}
-            onClick={() => setActiveNav('Dashboard')}
-            title="Dashboard"
-          >
-            <span className="bottom-nav-icon"><FaChartBar /></span>
-            <span className="bottom-nav-label">Dashboard</span>
-          </button>
-          <button
-            className={`bottom-nav-item ${activeNav === 'All Items' ? 'active' : ''}`}
-            onClick={() => setActiveNav('All Items')}
-            title="All Items"
-          >
-            <span className="bottom-nav-icon"><FaList /></span>
-            <span className="bottom-nav-label">All Items</span>
-          </button>
-          <button
-            className={`bottom-nav-item ${activeNav === 'Low Stock' ? 'active' : ''}`}
-            onClick={() => setActiveNav('Low Stock')}
-            title="Low Stock"
-          >
-            <span className="bottom-nav-icon"><FaExclamationTriangle /></span>
-            <span className="bottom-nav-label">Low Stock</span>
-          </button>
-          <button
-            className={`bottom-nav-item ${activeNav === 'Suppliers' ? 'active' : ''}`}
-            onClick={() => setActiveNav('Suppliers')}
-            title="Suppliers"
-          >
-            <span className="bottom-nav-icon"><FaBuilding /></span>
-            <span className="bottom-nav-label">Suppliers</span>
-          </button>
-          <button
-            className={`bottom-nav-item ${activeNav === 'Reports' ? 'active' : ''}`}
-            onClick={() => setActiveNav('Reports')}
-            title="Reports"
-          >
-            <span className="bottom-nav-icon"><FaChartLine /></span>
-            <span className="bottom-nav-label">Reports</span>
-          </button>
-          <button
-            className={`bottom-nav-item ${activeNav === 'Settings' ? 'active' : ''}`}
-            onClick={() => setActiveNav('Settings')}
-            title="Settings"
-          >
-            <span className="bottom-nav-icon"><FaCog /></span>
-            <span className="bottom-nav-label">Settings</span>
-          </button>
+          {NAV_ITEMS.map(item => {
+            const Icon = item.icon
+            const isActive = activeNav === item.key
+            const baseColor = item.color
+            const inactiveColor = `${baseColor}99`
+            return (
+              <button
+                key={item.key}
+                className={`bottom-nav-item ${item.key.replace(/\s+/g, '-').toLowerCase()} ${isActive ? 'active' : ''}`}
+                onClick={() => setActiveNav(item.key)}
+                title={item.label}
+              >
+                <span
+                  className="bottom-nav-icon"
+                  style={{ color: isActive ? baseColor : inactiveColor }}
+                >
+                  <Icon />
+                </span>
+                <span
+                  className="bottom-nav-label"
+                  style={{ color: isActive ? baseColor : inactiveColor }}
+                >
+                  {item.label}
+                </span>
+              </button>
+            )
+          })}
         </nav>
       )}
 
