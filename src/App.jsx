@@ -1,10 +1,88 @@
 import { useState, useEffect } from 'react'
-import axios from 'axios'
 import './App.css'
+import { 
+  FaBox, 
+  FaChartBar, 
+  FaList, 
+  FaExclamationTriangle, 
+  FaBuilding, 
+  FaChartLine, 
+  FaCog,
+  FaSearch,
+  FaBell,
+  FaUser,
+  FaCheck,
+  FaClock,
+  FaTrash,
+  FaEdit,
+  FaInfoCircle,
+  FaSun,
+  FaMoon,
+  FaChevronLeft,
+  FaChevronRight,
+  FaChevronUp,
+  FaChevronDown,
+  FaLaptop,
+  FaKeyboard,
+  FaChair,
+  FaTimes,
+  FaInbox
+} from 'react-icons/fa'
 
-// In App.jsx
-// Replace the API_BASE_URL with your live backend
-const API_BASE_URL = 'https://product-inventory-backend-eg9l.onrender.com/api';
+// Sample data (you can replace this with your JSON import)
+const sampleData = [
+  {
+    id: 1,
+    name: "MacBook Pro",
+    category: "Electronics",
+    quantity: 15,
+    price: 1999.99,
+    supplier: "Apple Inc",
+    description: "16-inch MacBook Pro with M1 Pro chip",
+    lastUpdated: "2024-01-15"
+  },
+  {
+    id: 2,
+    name: "Office Chair",
+    category: "Furniture",
+    quantity: 8,
+    price: 299.99,
+    supplier: "Office Comfort",
+    description: "Ergonomic office chair with lumbar support",
+    lastUpdated: "2024-01-10"
+  },
+  {
+    id: 3,
+    name: "Wireless Keyboard",
+    category: "Accessories",
+    quantity: 25,
+    price: 89.99,
+    supplier: "TechGear Inc",
+    description: "Mechanical wireless keyboard",
+    lastUpdated: "2024-01-12"
+  },
+  {
+    id: 4,
+    name: "Gaming Monitor",
+    category: "Electronics",
+    quantity: 5,
+    price: 499.99,
+    supplier: "DisplayTech",
+    description: "27-inch 144Hz gaming monitor",
+    lastUpdated: "2024-01-08"
+  },
+  {
+    id: 5,
+    name: "Desk Lamp",
+    category: "Furniture",
+    quantity: 30,
+    price: 45.99,
+    supplier: "Home Essentials",
+    description: "LED desk lamp with adjustable brightness",
+    lastUpdated: "2024-01-14"
+  }
+];
+
 // Dashboard Component with Graphs
 function DashboardPage({ inventory, totalItems, totalValue, lowStockItems, recentItems, getCategoryIcon }) {
   // Calculate data for charts
@@ -19,54 +97,56 @@ function DashboardPage({ inventory, totalItems, totalValue, lowStockItems, recen
 
   // Top items by value
   const topItems = [...inventory]
-    .sort((a, b) => (b.price * b.stock) - (a.price * a.stock))
+    .sort((a, b) => (b.price * b.quantity) - (a.price * a.quantity))
     .slice(0, 5)
 
   // Stock level distribution
   const stockLevels = {
-    low: inventory.filter(item => item.stock < 20).length,
-    medium: inventory.filter(item => item.stock >= 20 && item.stock < 50).length,
-    high: inventory.filter(item => item.stock >= 50).length
+    low: inventory.filter(item => item.quantity < 20).length,
+    medium: inventory.filter(item => item.quantity >= 20 && item.quantity < 50).length,
+    high: inventory.filter(item => item.quantity >= 50).length
   }
 
-  const inStockItems = inventory.filter(item => item.stock >= 20).length
-  const mediumStock = inventory.filter(item => item.stock >= 20 && item.stock < 50).length
-  const highStock = inventory.filter(item => item.stock >= 50).length
+  const inStockItems = inventory.filter(item => item.quantity >= 20).length
+  const mediumStock = inventory.filter(item => item.quantity >= 20 && item.quantity < 50).length
+  const highStock = inventory.filter(item => item.quantity >= 50).length
 
   return (
     <div className="dashboard-page">
       <div className="page-title-section">
-        <h1>Inventory Dashboard</h1>
-        <div className="breadcrumb">General {'>'} All Inventory</div>
+        <div>
+          <h1>Inventory Dashboard</h1>
+          <div className="breadcrumb">General {'>'} All Inventory</div>
+        </div>
       </div>
 
       <div className="summary-cards">
         <div className="summary-card paid">
-          <div className="summary-card-icon">✅</div>
+          <div className="summary-card-icon"><FaCheck /></div>
           <div className="summary-card-content">
             <div className="summary-card-label">In Stock</div>
             <div className="summary-card-value">Items: {inStockItems}</div>
-            <div className="summary-card-amount">Value: ${(inventory.filter(item => item.stock >= 20).reduce((sum, item) => sum + (item.price * item.stock), 0) / 1000).toFixed(1)}K</div>
+            <div className="summary-card-amount">Value: ${(inventory.filter(item => item.quantity >= 20).reduce((sum, item) => sum + (item.price * item.quantity), 0) / 1000).toFixed(1)}K</div>
           </div>
         </div>
         <div className="summary-card unpaid">
-          <div className="summary-card-icon">⏰</div>
+          <div className="summary-card-icon"><FaClock /></div>
           <div className="summary-card-content">
             <div className="summary-card-label">Medium Stock</div>
             <div className="summary-card-value">Items: {mediumStock}</div>
-            <div className="summary-card-amount">Value: ${(inventory.filter(item => item.stock >= 20 && item.stock < 50).reduce((sum, item) => sum + (item.price * item.stock), 0) / 1000).toFixed(1)}K</div>
+            <div className="summary-card-amount">Value: ${(inventory.filter(item => item.quantity >= 20 && item.quantity < 50).reduce((sum, item) => sum + (item.price * item.quantity), 0) / 1000).toFixed(1)}K</div>
           </div>
         </div>
         <div className="summary-card overdue">
-          <div className="summary-card-icon">⚠️</div>
+          <div className="summary-card-icon"><FaExclamationTriangle /></div>
           <div className="summary-card-content">
             <div className="summary-card-label">Low Stock</div>
             <div className="summary-card-value">Items: {lowStockItems}</div>
-            <div className="summary-card-amount">Value: ${(inventory.filter(item => item.stock < 20).reduce((sum, item) => sum + (item.price * item.stock), 0) / 1000).toFixed(1)}K</div>
+            <div className="summary-card-amount">Value: ${(inventory.filter(item => item.quantity < 20).reduce((sum, item) => sum + (item.price * item.quantity), 0) / 1000).toFixed(1)}K</div>
           </div>
         </div>
         <div className="summary-card draft">
-          <div className="summary-card-icon">📦</div>
+          <div className="summary-card-icon"><FaBox /></div>
           <div className="summary-card-content">
             <div className="summary-card-label">Total Items</div>
             <div className="summary-card-value">Items: {totalItems}</div>
@@ -87,7 +167,7 @@ function DashboardPage({ inventory, totalItems, totalValue, lowStockItems, recen
                     className="bar-fill"
                     style={{ 
                       width: `${(categoryCounts[index] / maxCount) * 100}%`,
-                      background: `linear-gradient(90deg, #7C3AED 0%, #6B46C1 100%)`
+                      background: `linear-gradient(90deg, #ff6b35 0%, #ff8c5a 100%)`
                     }}
                   >
                     <span className="bar-value">{categoryCounts[index]}</span>
@@ -101,30 +181,66 @@ function DashboardPage({ inventory, totalItems, totalValue, lowStockItems, recen
         <div className="chart-card">
           <h3>Stock Level Distribution</h3>
           <div className="pie-chart-container">
-            <div className="pie-chart">
-              <div 
-                className="pie-segment low"
-                style={{ 
-                  '--percentage': (stockLevels.low / totalItems) * 100,
-                  '--color': '#ef4444'
-                }}
-              ></div>
-              <div 
-                className="pie-segment medium"
-                style={{ 
-                  '--percentage': (stockLevels.medium / totalItems) * 100,
-                  '--color': '#f59e0b',
-                  '--offset': (stockLevels.low / totalItems) * 100
-                }}
-              ></div>
-              <div 
-                className="pie-segment high"
-                style={{ 
-                  '--percentage': (stockLevels.high / totalItems) * 100,
-                  '--color': '#10b981',
-                  '--offset': ((stockLevels.low + stockLevels.medium) / totalItems) * 100
-                }}
-              ></div>
+            <div className="pie-chart-wrapper">
+              <svg className="pie-chart-svg" viewBox="0 0 200 200">
+                {(() => {
+                  const total = stockLevels.low + stockLevels.medium + stockLevels.high
+                  if (total === 0) {
+                    return (
+                      <>
+                        <circle cx="100" cy="100" r="80" fill="#f3f4f6" />
+                        <circle cx="100" cy="100" r="60" fill="white" />
+                      </>
+                    )
+                  }
+                  
+                  let currentOffset = 0
+                  const radius = 80
+                  const centerX = 100
+                  const centerY = 100
+                  
+                  const lowPercentage = total > 0 ? (stockLevels.low / total) * 100 : 0
+                  const mediumPercentage = total > 0 ? (stockLevels.medium / total) * 100 : 0
+                  const highPercentage = total > 0 ? (stockLevels.high / total) * 100 : 0
+                  
+                  const createArc = (percentage, color) => {
+                    if (percentage <= 0) return null
+                    
+                    const startAngle = (currentOffset / 100) * 360 - 90
+                    const endAngle = ((currentOffset + percentage) / 100) * 360 - 90
+                    currentOffset += percentage
+                    
+                    const startAngleRad = (startAngle * Math.PI) / 180
+                    const endAngleRad = (endAngle * Math.PI) / 180
+                    
+                    const x1 = centerX + radius * Math.cos(startAngleRad)
+                    const y1 = centerY + radius * Math.sin(startAngleRad)
+                    const x2 = centerX + radius * Math.cos(endAngleRad)
+                    const y2 = centerY + radius * Math.sin(endAngleRad)
+                    
+                    const largeArcFlag = percentage > 50 ? 1 : 0
+                    
+                    return (
+                      <path
+                        key={color}
+                        d={`M ${centerX} ${centerY} L ${x1} ${y1} A ${radius} ${radius} 0 ${largeArcFlag} 1 ${x2} ${y2} Z`}
+                        fill={color}
+                        stroke="white"
+                        strokeWidth="3"
+                      />
+                    )
+                  }
+                  
+                  return (
+                    <>
+                      {createArc(lowPercentage, '#ef4444')}
+                      {createArc(mediumPercentage, '#f59e0b')}
+                      {createArc(highPercentage, '#10b981')}
+                      <circle cx="100" cy="100" r="50" fill="white" />
+                    </>
+                  )
+                })()}
+              </svg>
             </div>
             <div className="pie-legend">
               <div className="legend-item">
@@ -152,7 +268,7 @@ function DashboardPage({ inventory, totalItems, totalValue, lowStockItems, recen
                 <div className="top-item-icon">{getCategoryIcon(item.category)}</div>
                 <div className="top-item-info">
                   <div className="top-item-name">{item.name}</div>
-                  <div className="top-item-value">${(item.price * item.stock).toFixed(2)}</div>
+                  <div className="top-item-value">${(item.price * item.quantity).toFixed(2)}</div>
                 </div>
               </div>
             ))}
@@ -167,7 +283,7 @@ function DashboardPage({ inventory, totalItems, totalValue, lowStockItems, recen
                 <div className="timeline-dot">{getCategoryIcon(item.category)}</div>
                 <div className="timeline-content">
                   <div className="timeline-title">{item.name} added</div>
-                  <div className="timeline-date">{new Date(item.created_at).toLocaleDateString()}</div>
+                  <div className="timeline-date">{item.lastUpdated}</div>
                 </div>
               </div>
             ))}
@@ -181,16 +297,29 @@ function DashboardPage({ inventory, totalItems, totalValue, lowStockItems, recen
 // All Items Page with List/Table View
 function AllItemsPage({ 
   inventory, 
-  filteredInventory, 
+  paginatedInventory,
+  totalPages,
+  currentPage,
+  setCurrentPage,
+  itemsPerPage,
+  setItemsPerPage,
+  sortedInventoryLength,
   searchTerm, 
   setSearchTerm,
   filterCategory,
   setFilterCategory,
+  sortBy,
+  setSortBy,
+  sortOrder,
+  setSortOrder,
   categories,
   handleAdd,
   handleEdit,
   handleDelete 
 }) {
+  const startIndex = (currentPage - 1) * itemsPerPage
+  const endIndex = Math.min(startIndex + itemsPerPage, sortedInventoryLength)
+
   return (
     <div className="all-items-page">
       <div className="page-title-section">
@@ -199,18 +328,21 @@ function AllItemsPage({
           <div className="breadcrumb">General {'>'} All Items</div>
         </div>
         <button className="btn-create" onClick={handleAdd}>
-          + Add Product
+          + Add Item
         </button>
       </div>
 
       <div className="list-controls">
-        <input
-          type="text"
-          placeholder="🔍 Search products..."
-          className="search-input-main"
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-        />
+        <div className="search-input-wrapper">
+          <FaSearch className="search-icon-inline" />
+          <input
+            type="text"
+            placeholder="Search items..."
+            className="search-input-main"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
+        </div>
         <select
           className="filter-dropdown"
           value={filterCategory}
@@ -221,6 +353,30 @@ function AllItemsPage({
             <option key={cat} value={cat}>{cat}</option>
           ))}
         </select>
+        <select
+          className="filter-dropdown"
+          value={sortBy}
+          onChange={(e) => {
+            setSortBy(e.target.value)
+            if (e.target.value !== 'none') {
+              setSortOrder('asc')
+            }
+          }}
+        >
+          <option value="none">Sort by...</option>
+          <option value="name">Name</option>
+          <option value="price">Price</option>
+          <option value="quantity">Stock</option>
+        </select>
+        {sortBy !== 'none' && (
+          <button
+            className="sort-order-btn"
+            onClick={() => setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')}
+            title={sortOrder === 'asc' ? 'Ascending' : 'Descending'}
+          >
+            {sortOrder === 'asc' ? <FaChevronUp /> : <FaChevronDown />}
+          </button>
+        )}
       </div>
 
       <div className="table-wrapper">
@@ -228,52 +384,51 @@ function AllItemsPage({
           <thead>
             <tr>
               <th>ID</th>
-              <th>Product Name</th>
+              <th>Item Name</th>
               <th>Category</th>
               <th>Stock</th>
               <th>Price</th>
               <th>Total Value</th>
-              <th>Created Date</th>
               <th>Actions</th>
             </tr>
           </thead>
           <tbody>
-            {filteredInventory.length === 0 ? (
+            {paginatedInventory.length === 0 ? (
               <tr>
-                <td colSpan="8" className="no-data-cell">
+                <td colSpan="7" className="no-data-cell">
                   <div className="no-data-message">
-                    <span>📭</span>
-                    <p>No products found</p>
+                    <FaInbox className="no-data-icon" />
+                    <p>No items found</p>
                   </div>
                 </td>
               </tr>
             ) : (
-              filteredInventory.map(item => (
-                <tr key={item.id} className={item.stock < 20 ? 'low-stock-row' : ''}>
+              paginatedInventory.map((item, index) => (
+                <tr key={item.id} className={item.quantity < 20 ? 'low-stock-row' : ''}>
                   <td>{item.id}</td>
                   <td>
                     <div className="item-name-cell">
                       <strong>{item.name}</strong>
+                      <small>{item.description}</small>
                     </div>
                   </td>
                   <td>
                     <span className="category-tag">{item.category}</span>
                   </td>
                   <td>
-                    <span className={item.stock < 20 ? 'quantity-low' : 'quantity-ok'}>
-                      {item.stock}
+                    <span className={item.quantity < 20 ? 'quantity-low' : 'quantity-ok'}>
+                      {item.quantity}
                     </span>
                   </td>
-                  <td>${parseFloat(item.price).toFixed(2)}</td>
-                  <td>${(parseFloat(item.price) * item.stock).toFixed(2)}</td>
-                  <td>{new Date(item.created_at).toLocaleDateString()}</td>
+                  <td>${item.price.toFixed(2)}</td>
+                  <td>${(item.price * item.quantity).toFixed(2)}</td>
                   <td>
                     <div className="table-actions">
-                      <button className="btn-edit-small" onClick={() => handleEdit(item)}>
-                        ✏️ Edit
+                      <button className="btn-edit-small" onClick={() => handleEdit(item)} title="Edit">
+                        <FaEdit />
                       </button>
-                      <button className="btn-delete-small" onClick={() => handleDelete(item.id)}>
-                        🗑️ Delete
+                      <button className="btn-delete-small" onClick={() => handleDelete(item.id)} title="Delete">
+                        <FaTrash />
                       </button>
                     </div>
                   </td>
@@ -283,13 +438,76 @@ function AllItemsPage({
           </tbody>
         </table>
       </div>
+
+      {/* Pagination */}
+      {totalPages > 1 && (
+        <div className="pagination">
+          <div className="pagination-info">
+            <span>Items per page:</span>
+            <select
+              className="pagination-select"
+              value={itemsPerPage}
+              onChange={(e) => {
+                setItemsPerPage(Number(e.target.value))
+                setCurrentPage(1)
+              }}
+            >
+              <option value="5">5</option>
+              <option value="10">10</option>
+              <option value="20">20</option>
+              <option value="50">50</option>
+            </select>
+            <span className="pagination-count">
+              Showing {sortedInventoryLength > 0 ? startIndex + 1 : 0}-{endIndex} of {sortedInventoryLength} items
+            </span>
+          </div>
+          <div className="pagination-controls">
+            <button
+              className="pagination-btn"
+              onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+              disabled={currentPage === 1}
+            >
+              <FaChevronLeft /> Previous
+            </button>
+            <div className="pagination-numbers">
+              {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => {
+                if (
+                  page === 1 ||
+                  page === totalPages ||
+                  (page >= currentPage - 1 && page <= currentPage + 1)
+                ) {
+                  return (
+                    <button
+                      key={page}
+                      className={`pagination-number ${currentPage === page ? 'active' : ''}`}
+                      onClick={() => setCurrentPage(page)}
+                    >
+                      {page}
+                    </button>
+                  )
+                } else if (page === currentPage - 2 || page === currentPage + 2) {
+                  return <span key={page} className="pagination-ellipsis">...</span>
+                }
+                return null
+              })}
+            </div>
+            <button
+              className="pagination-btn"
+              onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+              disabled={currentPage === totalPages}
+            >
+              Next <FaChevronRight />
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
 
 // Low Stock Page
 function LowStockPage({ inventory, handleEdit, handleDelete, getCategoryIcon }) {
-  const lowStockItems = inventory.filter(item => item.stock < 20)
+  const lowStockItems = inventory.filter(item => item.quantity < 20)
 
   return (
     <div className="low-stock-page">
@@ -313,10 +531,10 @@ function LowStockPage({ inventory, handleEdit, handleDelete, getCategoryIcon }) 
                 <p className="low-stock-category">{item.category}</p>
                 <div className="low-stock-info">
                   <div className="stock-warning">
-                    <span className="warning-icon">⚠️</span>
-                    <span>Only {item.stock} left</span>
+                    <FaExclamationTriangle className="warning-icon" />
+                    <span>Only {item.quantity} left</span>
                   </div>
-                  <div className="stock-price">${parseFloat(item.price).toFixed(2)} each</div>
+                  <div className="stock-price">${item.price.toFixed(2)} each</div>
                 </div>
                 <div className="low-stock-actions">
                   <button className="btn-edit-small" onClick={() => handleEdit(item)}>
@@ -337,12 +555,12 @@ function LowStockPage({ inventory, handleEdit, handleDelete, getCategoryIcon }) 
 
 // Suppliers Page
 function SuppliersPage({ inventory }) {
-  const categories = [...new Set(inventory.map(item => item.category))]
-  const categoryData = categories.map(category => {
-    const items = inventory.filter(item => item.category === category)
-    const totalValue = items.reduce((sum, item) => sum + (parseFloat(item.price) * item.stock), 0)
+  const suppliers = [...new Set(inventory.map(item => item.supplier))].filter(Boolean)
+  const supplierData = suppliers.map(supplier => {
+    const items = inventory.filter(item => item.supplier === supplier)
+    const totalValue = items.reduce((sum, item) => sum + (item.price * item.quantity), 0)
     return {
-      name: category,
+      name: supplier,
       itemCount: items.length,
       totalValue
     }
@@ -352,28 +570,32 @@ function SuppliersPage({ inventory }) {
     <div className="suppliers-page">
       <div className="page-title-section">
         <div>
-          <h1>Categories</h1>
-          <div className="breadcrumb">General {'>'} Categories</div>
+          <h1>Suppliers</h1>
+          <div className="breadcrumb">General {'>'} Suppliers</div>
         </div>
       </div>
 
       <div className="suppliers-grid">
-        {categoryData.map((category, index) => (
-          <div key={index} className="supplier-card">
-            <div className="supplier-avatar">🏷️</div>
-            <h3>{category.name}</h3>
-            <div className="supplier-stats">
-              <div className="supplier-stat">
-                <span className="stat-label">Products</span>
-                <span className="stat-value">{category.itemCount}</span>
-              </div>
-              <div className="supplier-stat">
-                <span className="stat-label">Total Value</span>
-                <span className="stat-value">${(category.totalValue / 1000).toFixed(1)}K</span>
+        {supplierData.length === 0 ? (
+          <div className="no-items">No suppliers found</div>
+        ) : (
+          supplierData.map((supplier, index) => (
+            <div key={index} className="supplier-card">
+              <div className="supplier-avatar"><FaBuilding /></div>
+              <h3>{supplier.name}</h3>
+              <div className="supplier-stats">
+                <div className="supplier-stat">
+                  <span className="stat-label">Items</span>
+                  <span className="stat-value">{supplier.itemCount}</span>
+                </div>
+                <div className="supplier-stat">
+                  <span className="stat-label">Total Value</span>
+                  <span className="stat-value">${(supplier.totalValue / 1000).toFixed(1)}K</span>
+                </div>
               </div>
             </div>
-          </div>
-        ))}
+          ))
+        )}
       </div>
     </div>
   )
@@ -387,7 +609,7 @@ function ReportsPage({ inventory, totalItems, totalValue }) {
       acc[category] = { count: 0, value: 0 }
     }
     acc[category].count += 1
-    acc[category].value += parseFloat(item.price) * item.stock
+    acc[category].value += (item.price * item.quantity)
     return acc
   }, {})
 
@@ -402,10 +624,10 @@ function ReportsPage({ inventory, totalItems, totalValue }) {
 
       <div className="reports-content">
         <div className="report-card">
-          <h3>📊 Summary Report</h3>
+          <h3><FaChartBar /> Summary Report</h3>
           <div className="report-data">
             <div className="report-item">
-              <span>Total Products:</span>
+              <span>Total Items:</span>
               <strong>{totalItems}</strong>
             </div>
             <div className="report-item">
@@ -414,13 +636,13 @@ function ReportsPage({ inventory, totalItems, totalValue }) {
             </div>
             <div className="report-item">
               <span>Low Stock Items:</span>
-              <strong>{inventory.filter(item => item.stock < 20).length}</strong>
+              <strong>{inventory.filter(item => item.quantity < 20).length}</strong>
             </div>
           </div>
         </div>
 
         <div className="report-card">
-          <h3>📈 Category Breakdown</h3>
+          <h3><FaChartLine /> Category Breakdown</h3>
           <div className="report-list">
             {Object.entries(categoryBreakdown).map(([category, data]) => (
               <div key={category} className="report-list-item">
@@ -489,36 +711,43 @@ function App() {
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [editingItem, setEditingItem] = useState(null)
   const [activeNav, setActiveNav] = useState('Dashboard')
+  const [theme, setTheme] = useState('light')
   const [formData, setFormData] = useState({
     name: '',
     category: '',
+    quantity: '',
     price: '',
-    stock: ''
+    supplier: '',
+    description: ''
   })
   const [searchTerm, setSearchTerm] = useState('')
   const [filterCategory, setFilterCategory] = useState('All')
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState('')
+  const [sortBy, setSortBy] = useState('none')
+  const [sortOrder, setSortOrder] = useState('asc')
+  const [currentPage, setCurrentPage] = useState(1)
+  const [itemsPerPage, setItemsPerPage] = useState(10)
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
+  const [isMobile, setIsMobile] = useState(false)
 
-  // Load products from backend API
-  const fetchProducts = async () => {
-    try {
-      setLoading(true)
-      const response = await axios.get(`${API_BASE_URL}/products`)
-      if (response.data.success) {
-        setInventory(response.data.data)
-      }
-    } catch (err) {
-      setError('Failed to fetch products')
-      console.error('Error fetching products:', err)
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  // Load products on component mount
+  // Load sample data on component mount
   useEffect(() => {
-    fetchProducts()
+    setInventory(sampleData)
+  }, [])
+
+  // Check if mobile and set sidebar collapsed by default on mobile
+  useEffect(() => {
+    const checkMobile = () => {
+      const mobile = window.innerWidth <= 768
+      setIsMobile(mobile)
+      if (mobile) {
+        setSidebarCollapsed(true)
+      }
+    }
+    
+    checkMobile()
+    window.addEventListener('resize', checkMobile)
+    
+    return () => window.removeEventListener('resize', checkMobile)
   }, [])
 
   // Get unique categories for filter
@@ -527,85 +756,116 @@ function App() {
   // Filter inventory based on search and category
   const filteredInventory = inventory.filter(item => {
     const matchesSearch = item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         (item.description && item.description.toLowerCase().includes(searchTerm.toLowerCase())) ||
                          (item.category && item.category.toLowerCase().includes(searchTerm.toLowerCase()))
     const matchesCategory = filterCategory === 'All' || item.category === filterCategory
     return matchesSearch && matchesCategory
   })
 
+  // Sort filtered inventory
+  const sortedInventory = [...filteredInventory].sort((a, b) => {
+    if (sortBy === 'none') return 0
+    
+    let comparison = 0
+    if (sortBy === 'name') {
+      comparison = a.name.localeCompare(b.name)
+    } else if (sortBy === 'price') {
+      comparison = a.price - b.price
+    } else if (sortBy === 'quantity') {
+      comparison = a.quantity - b.quantity
+    }
+    
+    return sortOrder === 'asc' ? comparison : -comparison
+  })
+
+  // Pagination calculations
+  const totalPages = Math.ceil(sortedInventory.length / itemsPerPage)
+  const startIndex = (currentPage - 1) * itemsPerPage
+  const endIndex = startIndex + itemsPerPage
+  const paginatedInventory = sortedInventory.slice(startIndex, endIndex)
+
+  // Reset to page 1 when filters change
+  useEffect(() => {
+    setCurrentPage(1)
+  }, [searchTerm, filterCategory, sortBy, sortOrder, itemsPerPage])
+
   // Calculate statistics
   const totalItems = inventory.length
-  const totalValue = inventory.reduce((sum, item) => sum + (parseFloat(item.price) * item.stock), 0)
-  const lowStockItems = inventory.filter(item => item.stock < 20).length
-  const recentItems = [...inventory].sort((a, b) => new Date(b.created_at) - new Date(a.created_at)).slice(0, 5)
+  const totalValue = inventory.reduce((sum, item) => sum + (item.price * item.quantity), 0)
+  const lowStockItems = inventory.filter(item => item.quantity < 20).length
+  const recentItems = [...inventory].sort((a, b) => new Date(b.lastUpdated) - new Date(a.lastUpdated)).slice(0, 5)
 
-  // Open modal for adding new product
+  // Get current date info
+  const currentDate = new Date()
+  const currentMonth = currentDate.toLocaleString('default', { month: 'long', year: 'numeric' })
+  const daysInMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0).getDate()
+  const firstDayOfMonth = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1).getDay()
+
+  // Open modal for adding new item
   const handleAdd = () => {
     setEditingItem(null)
     setFormData({
       name: '',
       category: '',
+      quantity: '',
       price: '',
-      stock: ''
+      supplier: '',
+      description: ''
     })
     setIsModalOpen(true)
   }
 
-  // Open modal for editing existing product
+  // Open modal for editing existing item
   const handleEdit = (item) => {
     setEditingItem(item)
     setFormData({
       name: item.name,
       category: item.category,
+      quantity: item.quantity.toString(),
       price: item.price.toString(),
-      stock: item.stock.toString()
+      supplier: item.supplier,
+      description: item.description || ''
     })
     setIsModalOpen(true)
   }
 
   // Handle form submission (Create or Update)
-  const handleSubmit = async (e) => {
+  const handleSubmit = (e) => {
     e.preventDefault()
-    try {
-      const productData = {
-        name: formData.name,
-        category: formData.category,
-        price: parseFloat(formData.price),
-        stock: parseInt(formData.stock)
-      }
-
-      if (editingItem) {
-        // Update existing product
-        await axios.put(`${API_BASE_URL}/products/${editingItem.id}`, productData)
-      } else {
-        // Create new product
-        await axios.post(`${API_BASE_URL}/products`, productData)
-      }
-
-      // Refresh the product list
-      await fetchProducts()
-      setIsModalOpen(false)
-      setFormData({
-        name: '',
-        category: '',
-        price: '',
-        stock: ''
-      })
-    } catch (err) {
-      setError('Failed to save product')
-      console.error('Error saving product:', err)
+    const newItem = {
+      id: editingItem ? editingItem.id : Date.now(),
+      name: formData.name,
+      category: formData.category,
+      quantity: parseInt(formData.quantity),
+      price: parseFloat(formData.price),
+      supplier: formData.supplier,
+      description: formData.description,
+      lastUpdated: new Date().toISOString().split('T')[0]
     }
+
+    if (editingItem) {
+      setInventory(inventory.map(item => 
+        item.id === editingItem.id ? newItem : item
+      ))
+    } else {
+      setInventory([...inventory, newItem])
+    }
+
+    setIsModalOpen(false)
+    setFormData({
+      name: '',
+      category: '',
+      quantity: '',
+      price: '',
+      supplier: '',
+      description: ''
+    })
   }
 
   // Handle delete
-  const handleDelete = async (id) => {
-    if (window.confirm('Are you sure you want to delete this product?')) {
-      try {
-        await axios.delete(`${API_BASE_URL}/products/${id}`)
-        await fetchProducts() // Refresh the list
-      } catch (err) {
-        setError('Failed to delete product')
-        console.error('Error deleting product:', err)
-      }
+  const handleDelete = (id) => {
+    if (window.confirm('Are you sure you want to delete this item?')) {
+      setInventory(inventory.filter(item => item.id !== id))
     }
   }
 
@@ -621,40 +881,28 @@ function App() {
   // Get category icon
   const getCategoryIcon = (category) => {
     const icons = {
-      'Electronics': '💻',
-      'Furniture': '🪑',
-      'Kitchen': '🍳',
-      'Office': '📎',
-      'Sports': '⚽'
+      'Electronics': <FaLaptop />,
+      'Accessories': <FaKeyboard />,
+      'Furniture': <FaChair />
     }
-    return icons[category] || '📦'
+    return icons[category] || <FaBox />
   }
 
   // Generate calendar days
-  const currentDate = new Date()
-  const currentMonth = currentDate.toLocaleString('default', { month: 'long', year: 'numeric' })
-  const daysInMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0).getDate()
-  const firstDayOfMonth = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1).getDay()
-  const weekDays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
-  
   const calendarDays = []
+  const weekDays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
+  
+  // Adjust for Sunday-first week (0 = Sunday)
   for (let i = 0; i < firstDayOfMonth; i++) {
     calendarDays.push(null)
   }
+  
   for (let day = 1; day <= daysInMonth; day++) {
     calendarDays.push(day)
   }
 
   // Render current page based on activeNav
   const renderPage = () => {
-    if (loading) {
-      return <div className="loading">Loading...</div>
-    }
-
-    if (error) {
-      return <div className="error">{error}</div>
-    }
-
     switch (activeNav) {
       case 'Dashboard':
         return (
@@ -671,11 +919,21 @@ function App() {
         return (
           <AllItemsPage
             inventory={inventory}
-            filteredInventory={filteredInventory}
+            paginatedInventory={paginatedInventory}
+            totalPages={totalPages}
+            currentPage={currentPage}
+            setCurrentPage={setCurrentPage}
+            itemsPerPage={itemsPerPage}
+            setItemsPerPage={setItemsPerPage}
+            sortedInventoryLength={sortedInventory.length}
             searchTerm={searchTerm}
             setSearchTerm={setSearchTerm}
             filterCategory={filterCategory}
             setFilterCategory={setFilterCategory}
+            sortBy={sortBy}
+            setSortBy={setSortBy}
+            sortOrder={sortOrder}
+            setSortOrder={setSortOrder}
             categories={categories}
             handleAdd={handleAdd}
             handleEdit={handleEdit}
@@ -717,22 +975,26 @@ function App() {
     }
   }
 
+  const toggleTheme = () => {
+    setTheme(prevTheme => prevTheme === 'light' ? 'dark' : 'light')
+  }
+
   return (
-    <div className="app">
+    <div className={`app ${theme}`}>
       {/* Top Bar */}
       <header className="top-bar">
         <div className="top-bar-left">
           <div className="top-logo">
-            <div className="top-logo-icon">📦</div>
+            <div className="top-logo-icon"><FaBox /></div>
             <span className="top-logo-text">Inventory Manager</span>
           </div>
         </div>
         <div className="top-bar-center">
           <div className="top-search">
-            <span className="search-icon">🔍</span>
+            <FaSearch className="search-icon" />
             <input 
               type="text" 
-              placeholder="Search products..." 
+              placeholder="Search items..." 
               className="top-search-input" 
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
@@ -740,134 +1002,85 @@ function App() {
           </div>
         </div>
         <div className="top-bar-right">
-          <button className="top-icon-btn">🔔</button>
-          <div className="top-user-avatar">👤</div>
+          <button className="top-icon-btn theme-toggle" onClick={toggleTheme} title={theme === 'light' ? 'Switch to Dark Mode' : 'Switch to Light Mode'}>
+            {theme === 'light' ? <FaMoon /> : <FaSun />}
+          </button>
+          <button className="top-icon-btn"><FaBell /></button>
+          <div className="top-user-avatar"><FaUser /></div>
         </div>
       </header>
 
-      {/* Left Sidebar */}
-      <aside className="sidebar">
+      {/* Left Sidebar - Hidden on Mobile */}
+      <aside className={`sidebar ${sidebarCollapsed ? 'collapsed' : ''} ${isMobile ? 'mobile-hidden' : ''}`}>
+        <button 
+          className="sidebar-toggle"
+          onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
+          title={sidebarCollapsed ? 'Expand Sidebar' : 'Collapse Sidebar'}
+        >
+          {sidebarCollapsed ? <FaChevronRight /> : <FaChevronLeft />}
+        </button>
+
         <nav className="sidebar-nav">
-          <button 
-            className={`nav-item ${activeNav === 'Dashboard' ? 'active' : ''}`}
-            onClick={() => setActiveNav('Dashboard')}
-          >
-            <span className="nav-icon">📊</span>
-            <span className="nav-text">Dashboard</span>
-          </button>
-          <button 
-            className={`nav-item ${activeNav === 'All Items' ? 'active' : ''}`}
-            onClick={() => setActiveNav('All Items')}
-          >
-            <span className="nav-icon">📋</span>
-            <span className="nav-text">All Items</span>
-          </button>
-          <button 
-            className={`nav-item ${activeNav === 'Low Stock' ? 'active' : ''}`}
-            onClick={() => setActiveNav('Low Stock')}
-          >
-            <span className="nav-icon">⚠️</span>
-            <span className="nav-text">Low Stock</span>
-          </button>
-          <button 
-            className={`nav-item ${activeNav === 'Suppliers' ? 'active' : ''}`}
-            onClick={() => setActiveNav('Suppliers')}
-          >
-            <span className="nav-icon">🏷️</span>
-            <span className="nav-text">Categories</span>
-          </button>
-          <button 
-            className={`nav-item ${activeNav === 'Reports' ? 'active' : ''}`}
-            onClick={() => setActiveNav('Reports')}
-          >
-            <span className="nav-icon">📈</span>
-            <span className="nav-text">Reports</span>
-          </button>
-          <button 
-            className={`nav-item ${activeNav === 'Settings' ? 'active' : ''}`}
-            onClick={() => setActiveNav('Settings')}
-          >
-            <span className="nav-icon">⚙️</span>
-            <span className="nav-text">Settings</span>
-          </button>
+          {[
+            { id: 'Dashboard', icon: <FaChartBar /> },
+            { id: 'All Items', icon: <FaList /> },
+            { id: 'Low Stock', icon: <FaExclamationTriangle /> },
+            { id: 'Suppliers', icon: <FaBuilding /> },
+            { id: 'Reports', icon: <FaChartLine /> },
+            { id: 'Settings', icon: <FaCog /> }
+          ].map(item => (
+            <button
+              key={item.id}
+              className={`nav-item ${activeNav === item.id ? 'active' : ''}`}
+              onClick={() => setActiveNav(item.id)}
+            >
+              <span className="nav-icon">{item.icon}</span>
+              {!sidebarCollapsed && <span className="nav-text">{item.id}</span>}
+            </button>
+          ))}
         </nav>
       </aside>
 
+      {/* Mobile Bottom Navigation */}
+      {isMobile && (
+        <nav className="mobile-bottom-nav">
+          {[
+            { id: 'Dashboard', icon: <FaChartBar /> },
+            { id: 'All Items', icon: <FaList /> },
+            { id: 'Low Stock', icon: <FaExclamationTriangle /> },
+            { id: 'Suppliers', icon: <FaBuilding /> },
+            { id: 'Reports', icon: <FaChartLine /> }
+          ].map(item => (
+            <button
+              key={item.id}
+              className={`mobile-nav-item ${activeNav === item.id ? 'active' : ''}`}
+              onClick={() => setActiveNav(item.id)}
+            >
+              <span className="mobile-nav-icon">{item.icon}</span>
+              <span className="mobile-nav-text">{item.id}</span>
+            </button>
+          ))}
+        </nav>
+      )}
+
       {/* Main Content */}
-      <main className="main-content">
+      <main className={`main-content ${sidebarCollapsed ? 'sidebar-collapsed' : ''} ${isMobile ? 'mobile' : ''}`}>
         {renderPage()}
       </main>
 
-      {/* Right Sidebar */}
-      <aside className="right-sidebar">
-        <div className="calendar-widget">
-          <div className="calendar-header">
-            <button className="calendar-nav">←</button>
-            <h3>{currentMonth}</h3>
-            <button className="calendar-nav">→</button>
-          </div>
-          <div className="calendar-grid">
-            {weekDays.map(day => (
-              <div key={day} className="calendar-weekday">{day}</div>
-            ))}
-            {calendarDays.map((day, index) => (
-              <div 
-                key={index} 
-                className={`calendar-day ${day === currentDate.getDate() ? 'today' : ''}`}
-              >
-                {day}
-              </div>
-            ))}
-          </div>
-        </div>
-
-        <div className="recent-activity">
-          <div className="activity-header">
-            <h3>Recent Products</h3>
-          </div>
-          <div className="activity-list">
-            {recentItems.slice(0, 4).map(item => (
-              <div key={item.id} className="activity-item">
-                <div className="activity-avatar">{getCategoryIcon(item.category)}</div>
-                <div className="activity-info">
-                  <div className="activity-name">{item.name}</div>
-                  <div className="activity-id">Stock: {item.stock}</div>
-                </div>
-                <div className="activity-status"></div>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        <div className="stats-widget">
-          <div className="stat-widget-item">
-            <div className="stat-widget-value">{totalItems}</div>
-            <div className="stat-widget-label">Total Products</div>
-          </div>
-          <div className="stat-widget-item">
-            <div className="stat-widget-value">${(totalValue / 1000).toFixed(1)}K</div>
-            <div className="stat-widget-label">Total Value</div>
-          </div>
-          <div className="stat-widget-item">
-            <div className="stat-widget-value">{lowStockItems}</div>
-            <div className="stat-widget-label">Low Stock</div>
-          </div>
-        </div>
-      </aside>
-
-      {/* Modal for Add/Edit */}
+      {/* Add/Edit Item Modal */}
       {isModalOpen && (
-        <div className="modal-overlay" onClick={() => setIsModalOpen(false)}>
-          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+        <div className="modal-overlay">
+          <div className="modal">
             <div className="modal-header">
-              <h2>{editingItem ? 'Edit Product' : 'Add New Product'}</h2>
+              <h2>{editingItem ? 'Edit Item' : 'Add New Item'}</h2>
               <button className="modal-close" onClick={() => setIsModalOpen(false)}>
-                ✕
+                <FaTimes />
               </button>
             </div>
-            <form onSubmit={handleSubmit} className="form">
+            <form onSubmit={handleSubmit} className="modal-form">
               <div className="form-group">
-                <label>Product Name *</label>
+                <label>Item Name</label>
                 <input
                   type="text"
                   name="name"
@@ -877,18 +1090,34 @@ function App() {
                 />
               </div>
               <div className="form-group">
-                <label>Category *</label>
-                <input
-                  type="text"
+                <label>Category</label>
+                <select
                   name="category"
                   value={formData.category}
                   onChange={handleInputChange}
                   required
-                />
+                >
+                  <option value="">Select Category</option>
+                  <option value="Electronics">Electronics</option>
+                  <option value="Furniture">Furniture</option>
+                  <option value="Accessories">Accessories</option>
+                  <option value="Other">Other</option>
+                </select>
               </div>
               <div className="form-row">
                 <div className="form-group">
-                  <label>Price ($) *</label>
+                  <label>Quantity</label>
+                  <input
+                    type="number"
+                    name="quantity"
+                    value={formData.quantity}
+                    onChange={handleInputChange}
+                    min="0"
+                    required
+                  />
+                </div>
+                <div className="form-group">
+                  <label>Price ($)</label>
                   <input
                     type="number"
                     name="price"
@@ -899,24 +1128,32 @@ function App() {
                     required
                   />
                 </div>
-                <div className="form-group">
-                  <label>Stock *</label>
-                  <input
-                    type="number"
-                    name="stock"
-                    value={formData.stock}
-                    onChange={handleInputChange}
-                    min="0"
-                    required
-                  />
-                </div>
               </div>
-              <div className="form-actions">
+              <div className="form-group">
+                <label>Supplier</label>
+                <input
+                  type="text"
+                  name="supplier"
+                  value={formData.supplier}
+                  onChange={handleInputChange}
+                  required
+                />
+              </div>
+              <div className="form-group">
+                <label>Description</label>
+                <textarea
+                  name="description"
+                  value={formData.description}
+                  onChange={handleInputChange}
+                  rows="3"
+                />
+              </div>
+              <div className="modal-actions">
                 <button type="button" className="btn-cancel" onClick={() => setIsModalOpen(false)}>
                   Cancel
                 </button>
-                <button type="submit" className="btn-submit">
-                  {editingItem ? 'Update' : 'Add'} Product
+                <button type="submit" className="btn-save">
+                  {editingItem ? 'Update Item' : 'Add Item'}
                 </button>
               </div>
             </form>
