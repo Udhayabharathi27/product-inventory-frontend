@@ -1,12 +1,13 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import './App.css'
-import { 
-  FaBox, 
-  FaChartBar, 
-  FaList, 
-  FaExclamationTriangle, 
-  FaBuilding, 
-  FaChartLine, 
+import axios from 'axios'
+import {
+  FaBox,
+  FaChartBar,
+  FaList,
+  FaExclamationTriangle,
+  FaBuilding,
+  FaChartLine,
   FaCog,
   FaSearch,
   FaBell,
@@ -29,59 +30,7 @@ import {
   FaInbox
 } from 'react-icons/fa'
 
-// Sample data (you can replace this with your JSON import)
-const sampleData = [
-  {
-    id: 1,
-    name: "MacBook Pro",
-    category: "Electronics",
-    quantity: 15,
-    price: 1999.99,
-    supplier: "Apple Inc",
-    description: "16-inch MacBook Pro with M1 Pro chip",
-    lastUpdated: "2024-01-15"
-  },
-  {
-    id: 2,
-    name: "Office Chair",
-    category: "Furniture",
-    quantity: 8,
-    price: 299.99,
-    supplier: "Office Comfort",
-    description: "Ergonomic office chair with lumbar support",
-    lastUpdated: "2024-01-10"
-  },
-  {
-    id: 3,
-    name: "Wireless Keyboard",
-    category: "Accessories",
-    quantity: 25,
-    price: 89.99,
-    supplier: "TechGear Inc",
-    description: "Mechanical wireless keyboard",
-    lastUpdated: "2024-01-12"
-  },
-  {
-    id: 4,
-    name: "Gaming Monitor",
-    category: "Electronics",
-    quantity: 5,
-    price: 499.99,
-    supplier: "DisplayTech",
-    description: "27-inch 144Hz gaming monitor",
-    lastUpdated: "2024-01-08"
-  },
-  {
-    id: 5,
-    name: "Desk Lamp",
-    category: "Furniture",
-    quantity: 30,
-    price: 45.99,
-    supplier: "Home Essentials",
-    description: "LED desk lamp with adjustable brightness",
-    lastUpdated: "2024-01-14"
-  }
-];
+const API_BASE_URL = 'https://product-inventory-backend-eg9l.onrender.com/api'
 
 // Dashboard Component with Graphs
 function DashboardPage({ inventory, totalItems, totalValue, lowStockItems, recentItems, getCategoryIcon }) {
@@ -113,12 +62,10 @@ function DashboardPage({ inventory, totalItems, totalValue, lowStockItems, recen
 
   return (
     <div className="dashboard-page">
-      <div className="page-title-section">
-        <div>
-          <h1>Inventory Dashboard</h1>
+        <div className="page-title-section">
+          <h1>Inventory</h1>
           <div className="breadcrumb">General {'>'} All Inventory</div>
         </div>
-      </div>
 
       <div className="summary-cards">
         <div className="summary-card paid">
@@ -163,11 +110,11 @@ function DashboardPage({ inventory, totalItems, totalValue, lowStockItems, recen
               <div key={category} className="bar-chart-item">
                 <div className="bar-label">{category}</div>
                 <div className="bar-container">
-                  <div 
+                  <div
                     className="bar-fill"
-                    style={{ 
+                    style={{
                       width: `${(categoryCounts[index] / maxCount) * 100}%`,
-                      background: `linear-gradient(90deg, #ff6b35 0%, #ff8c5a 100%)`
+                      background: `linear-gradient(90deg, #7C3AED 0%, #6B46C1 100%)`
                     }}
                   >
                     <span className="bar-value">{categoryCounts[index]}</span>
@@ -193,33 +140,33 @@ function DashboardPage({ inventory, totalItems, totalValue, lowStockItems, recen
                       </>
                     )
                   }
-                  
+
                   let currentOffset = 0
                   const radius = 80
                   const centerX = 100
                   const centerY = 100
-                  
+
                   const lowPercentage = total > 0 ? (stockLevels.low / total) * 100 : 0
                   const mediumPercentage = total > 0 ? (stockLevels.medium / total) * 100 : 0
                   const highPercentage = total > 0 ? (stockLevels.high / total) * 100 : 0
-                  
+
                   const createArc = (percentage, color) => {
                     if (percentage <= 0) return null
-                    
+
                     const startAngle = (currentOffset / 100) * 360 - 90
                     const endAngle = ((currentOffset + percentage) / 100) * 360 - 90
                     currentOffset += percentage
-                    
+
                     const startAngleRad = (startAngle * Math.PI) / 180
                     const endAngleRad = (endAngle * Math.PI) / 180
-                    
+
                     const x1 = centerX + radius * Math.cos(startAngleRad)
                     const y1 = centerY + radius * Math.sin(startAngleRad)
                     const x2 = centerX + radius * Math.cos(endAngleRad)
                     const y2 = centerY + radius * Math.sin(endAngleRad)
-                    
+
                     const largeArcFlag = percentage > 50 ? 1 : 0
-                    
+
                     return (
                       <path
                         key={color}
@@ -230,9 +177,9 @@ function DashboardPage({ inventory, totalItems, totalValue, lowStockItems, recen
                       />
                     )
                   }
-                  
-                  return (
-                    <>
+
+  return (
+    <>
                       {createArc(lowPercentage, '#ef4444')}
                       {createArc(mediumPercentage, '#f59e0b')}
                       {createArc(highPercentage, '#10b981')}
@@ -295,8 +242,8 @@ function DashboardPage({ inventory, totalItems, totalValue, lowStockItems, recen
 }
 
 // All Items Page with List/Table View
-function AllItemsPage({ 
-  inventory, 
+function AllItemsPage({
+  inventory,
   paginatedInventory,
   totalPages,
   currentPage,
@@ -304,7 +251,7 @@ function AllItemsPage({
   itemsPerPage,
   setItemsPerPage,
   sortedInventoryLength,
-  searchTerm, 
+  searchTerm,
   setSearchTerm,
   filterCategory,
   setFilterCategory,
@@ -315,11 +262,10 @@ function AllItemsPage({
   categories,
   handleAdd,
   handleEdit,
-  handleDelete 
+  handleDelete
 }) {
   const startIndex = (currentPage - 1) * itemsPerPage
   const endIndex = Math.min(startIndex + itemsPerPage, sortedInventoryLength)
-
   return (
     <div className="all-items-page">
       <div className="page-title-section">
@@ -328,7 +274,7 @@ function AllItemsPage({
           <div className="breadcrumb">General {'>'} All Items</div>
         </div>
         <button className="btn-create" onClick={handleAdd}>
-          + Add Item
+          + Create Item
         </button>
       </div>
 
@@ -364,9 +310,8 @@ function AllItemsPage({
           }}
         >
           <option value="none">Sort by...</option>
-          <option value="name">Name</option>
           <option value="price">Price</option>
-          <option value="quantity">Stock</option>
+          <option value="stock">Stock Count</option>
         </select>
         {sortBy !== 'none' && (
           <button
@@ -383,10 +328,10 @@ function AllItemsPage({
         <table className="items-table">
           <thead>
             <tr>
-              <th>ID</th>
+              <th>S.No</th>
               <th>Item Name</th>
               <th>Category</th>
-              <th>Stock</th>
+              <th>Qty</th>
               <th>Price</th>
               <th>Total Value</th>
               <th>Actions</th>
@@ -405,7 +350,7 @@ function AllItemsPage({
             ) : (
               paginatedInventory.map((item, index) => (
                 <tr key={item.id} className={item.quantity < 20 ? 'low-stock-row' : ''}>
-                  <td>{item.id}</td>
+                  <td>{startIndex + index + 1}</td>
                   <td>
                     <div className="item-name-cell">
                       <strong>{item.name}</strong>
@@ -555,7 +500,7 @@ function LowStockPage({ inventory, handleEdit, handleDelete, getCategoryIcon }) 
 
 // Suppliers Page
 function SuppliersPage({ inventory }) {
-  const suppliers = [...new Set(inventory.map(item => item.supplier))].filter(Boolean)
+  const suppliers = [...new Set(inventory.map(item => item.supplier))]
   const supplierData = suppliers.map(supplier => {
     const items = inventory.filter(item => item.supplier === supplier)
     const totalValue = items.reduce((sum, item) => sum + (item.price * item.quantity), 0)
@@ -576,26 +521,22 @@ function SuppliersPage({ inventory }) {
       </div>
 
       <div className="suppliers-grid">
-        {supplierData.length === 0 ? (
-          <div className="no-items">No suppliers found</div>
-        ) : (
-          supplierData.map((supplier, index) => (
-            <div key={index} className="supplier-card">
-              <div className="supplier-avatar"><FaBuilding /></div>
-              <h3>{supplier.name}</h3>
-              <div className="supplier-stats">
-                <div className="supplier-stat">
-                  <span className="stat-label">Items</span>
-                  <span className="stat-value">{supplier.itemCount}</span>
-                </div>
-                <div className="supplier-stat">
-                  <span className="stat-label">Total Value</span>
-                  <span className="stat-value">${(supplier.totalValue / 1000).toFixed(1)}K</span>
-                </div>
+        {supplierData.map((supplier, index) => (
+          <div key={index} className="supplier-card">
+            <div className="supplier-avatar"><FaBuilding /></div>
+            <h3>{supplier.name}</h3>
+            <div className="supplier-stats">
+              <div className="supplier-stat">
+                <span className="stat-label">Items</span>
+                <span className="stat-value">{supplier.itemCount}</span>
+              </div>
+              <div className="supplier-stat">
+                <span className="stat-label">Total Value</span>
+                <span className="stat-value">${(supplier.totalValue / 1000).toFixed(1)}K</span>
               </div>
             </div>
-          ))
-        )}
+          </div>
+        ))}
       </div>
     </div>
   )
@@ -603,16 +544,6 @@ function SuppliersPage({ inventory }) {
 
 // Reports Page
 function ReportsPage({ inventory, totalItems, totalValue }) {
-  const categoryBreakdown = inventory.reduce((acc, item) => {
-    const category = item.category || 'Uncategorized'
-    if (!acc[category]) {
-      acc[category] = { count: 0, value: 0 }
-    }
-    acc[category].count += 1
-    acc[category].value += (item.price * item.quantity)
-    return acc
-  }, {})
-
   return (
     <div className="reports-page">
       <div className="page-title-section">
@@ -635,8 +566,8 @@ function ReportsPage({ inventory, totalItems, totalValue }) {
               <strong>${totalValue.toLocaleString('en-US', { minimumFractionDigits: 2 })}</strong>
             </div>
             <div className="report-item">
-              <span>Low Stock Items:</span>
-              <strong>{inventory.filter(item => item.quantity < 20).length}</strong>
+              <span>Average Item Price:</span>
+              <strong>${(totalValue / totalItems / inventory.reduce((sum, item) => sum + item.quantity, 0)).toFixed(2)}</strong>
             </div>
           </div>
         </div>
@@ -644,12 +575,16 @@ function ReportsPage({ inventory, totalItems, totalValue }) {
         <div className="report-card">
           <h3><FaChartLine /> Category Breakdown</h3>
           <div className="report-list">
-            {Object.entries(categoryBreakdown).map(([category, data]) => (
-              <div key={category} className="report-list-item">
-                <span>{category}</span>
-                <strong>{data.count} items - ${data.value.toFixed(2)}</strong>
-              </div>
-            ))}
+            {[...new Set(inventory.map(item => item.category))].map(category => {
+              const categoryItems = inventory.filter(item => item.category === category)
+              const categoryValue = categoryItems.reduce((sum, item) => sum + (item.price * item.quantity), 0)
+              return (
+                <div key={category} className="report-list-item">
+                  <span>{category}</span>
+                  <strong>{categoryItems.length} items - ${categoryValue.toFixed(2)}</strong>
+                </div>
+              )
+            })}
           </div>
         </div>
       </div>
@@ -728,11 +663,73 @@ function App() {
   const [itemsPerPage, setItemsPerPage] = useState(10)
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
   const [isMobile, setIsMobile] = useState(false)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState('')
 
-  // Load sample data on component mount
-  useEffect(() => {
-    setInventory(sampleData)
+  const fetchInventory = useCallback(async () => {
+    setLoading(true)
+    setError('')
+
+    try {
+      const response = await axios.get(`${API_BASE_URL}/products`)
+      const data = response?.data
+      const records = Array.isArray(data?.data)
+        ? data.data
+        : Array.isArray(data)
+          ? data
+          : []
+
+      if (!Array.isArray(records)) {
+        throw new Error('Unexpected response from server')
+      }
+
+      const parseDate = (value) => {
+        if (!value) return null
+        const parsed = Date.parse(value)
+        return Number.isNaN(parsed) ? null : parsed
+      }
+
+      const formatDate = (value) => {
+        if (!value) return ''
+        const parsed = parseDate(value)
+        if (parsed === null) {
+          return typeof value === 'string' ? value : ''
+        }
+        return new Date(parsed).toLocaleDateString()
+      }
+
+      const transformed = records.map(product => {
+        const quantityRaw = Number(product.quantity ?? product.stock ?? 0)
+        const priceRaw = Number(product.price ?? 0)
+        const updatedAtRaw = product.updated_at ?? product.updatedAt ?? product.lastUpdated ?? product.created_at ?? product.createdAt ?? null
+        const createdAtRaw = product.created_at ?? product.createdAt ?? product.added_at ?? updatedAtRaw
+        const updatedAtTimestamp = parseDate(updatedAtRaw) ?? parseDate(createdAtRaw)
+
+        return {
+          id: product.id,
+          name: product.name || 'Unnamed Item',
+          category: product.category || 'Uncategorized',
+          quantity: Number.isNaN(quantityRaw) ? 0 : quantityRaw,
+          price: Number.isNaN(priceRaw) ? 0 : priceRaw,
+          supplier: product.supplier || 'General Supplier',
+          description: product.description || '',
+          lastUpdated: formatDate(updatedAtRaw || createdAtRaw),
+          updatedAtTimestamp
+        }
+      })
+
+      setInventory(transformed)
+    } catch (err) {
+      console.error('Error fetching inventory:', err)
+      setError('Failed to load inventory. Please try again.')
+    } finally {
+      setLoading(false)
+    }
   }, [])
+
+  useEffect(() => {
+    fetchInventory()
+  }, [fetchInventory])
 
   // Check if mobile and set sidebar collapsed by default on mobile
   useEffect(() => {
@@ -743,10 +740,10 @@ function App() {
         setSidebarCollapsed(true)
       }
     }
-    
+
     checkMobile()
     window.addEventListener('resize', checkMobile)
-    
+
     return () => window.removeEventListener('resize', checkMobile)
   }, [])
 
@@ -756,8 +753,7 @@ function App() {
   // Filter inventory based on search and category
   const filteredInventory = inventory.filter(item => {
     const matchesSearch = item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         (item.description && item.description.toLowerCase().includes(searchTerm.toLowerCase())) ||
-                         (item.category && item.category.toLowerCase().includes(searchTerm.toLowerCase()))
+                         item.description.toLowerCase().includes(searchTerm.toLowerCase())
     const matchesCategory = filterCategory === 'All' || item.category === filterCategory
     return matchesSearch && matchesCategory
   })
@@ -765,16 +761,14 @@ function App() {
   // Sort filtered inventory
   const sortedInventory = [...filteredInventory].sort((a, b) => {
     if (sortBy === 'none') return 0
-    
+
     let comparison = 0
-    if (sortBy === 'name') {
-      comparison = a.name.localeCompare(b.name)
-    } else if (sortBy === 'price') {
+    if (sortBy === 'price') {
       comparison = a.price - b.price
-    } else if (sortBy === 'quantity') {
+    } else if (sortBy === 'stock') {
       comparison = a.quantity - b.quantity
     }
-    
+
     return sortOrder === 'asc' ? comparison : -comparison
   })
 
@@ -787,13 +781,13 @@ function App() {
   // Reset to page 1 when filters change
   useEffect(() => {
     setCurrentPage(1)
-  }, [searchTerm, filterCategory, sortBy, sortOrder, itemsPerPage])
+  }, [searchTerm, filterCategory, sortBy, sortOrder])
 
   // Calculate statistics
   const totalItems = inventory.length
   const totalValue = inventory.reduce((sum, item) => sum + (item.price * item.quantity), 0)
   const lowStockItems = inventory.filter(item => item.quantity < 20).length
-  const recentItems = [...inventory].sort((a, b) => new Date(b.lastUpdated) - new Date(a.lastUpdated)).slice(0, 5)
+  const recentItems = inventory.slice(-5).reverse()
 
   // Get current date info
   const currentDate = new Date()
@@ -802,8 +796,7 @@ function App() {
   const firstDayOfMonth = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1).getDay()
 
   // Open modal for adding new item
-  const handleAdd = () => {
-    setEditingItem(null)
+  const resetForm = () => {
     setFormData({
       name: '',
       category: '',
@@ -812,6 +805,11 @@ function App() {
       supplier: '',
       description: ''
     })
+    setEditingItem(null)
+  }
+
+  const handleAdd = () => {
+    resetForm()
     setIsModalOpen(true)
   }
 
@@ -824,48 +822,55 @@ function App() {
       quantity: item.quantity.toString(),
       price: item.price.toString(),
       supplier: item.supplier,
-      description: item.description || ''
+      description: item.description
     })
     setIsModalOpen(true)
   }
 
   // Handle form submission (Create or Update)
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault()
-    const newItem = {
-      id: editingItem ? editingItem.id : Date.now(),
+
+    const payload = {
       name: formData.name,
       category: formData.category,
-      quantity: parseInt(formData.quantity),
-      price: parseFloat(formData.price),
+      price: parseFloat(formData.price) || 0,
+      stock: parseInt(formData.quantity, 10) || 0,
       supplier: formData.supplier,
-      description: formData.description,
-      lastUpdated: new Date().toISOString().split('T')[0]
+      description: formData.description
     }
 
-    if (editingItem) {
-      setInventory(inventory.map(item => 
-        item.id === editingItem.id ? newItem : item
-      ))
-    } else {
-      setInventory([...inventory, newItem])
-    }
+    try {
+      setError('')
 
-    setIsModalOpen(false)
-    setFormData({
-      name: '',
-      category: '',
-      quantity: '',
-      price: '',
-      supplier: '',
-      description: ''
-    })
+      if (editingItem) {
+        await axios.put(`${API_BASE_URL}/products/${editingItem.id}`, payload)
+      } else {
+        await axios.post(`${API_BASE_URL}/products`, payload)
+      }
+
+      await fetchInventory()
+      setIsModalOpen(false)
+      resetForm()
+    } catch (err) {
+      console.error('Error saving item:', err)
+      setError('Failed to save item. Please try again.')
+    }
   }
 
   // Handle delete
-  const handleDelete = (id) => {
-    if (window.confirm('Are you sure you want to delete this item?')) {
-      setInventory(inventory.filter(item => item.id !== id))
+  const handleDelete = async (id) => {
+    if (!window.confirm('Are you sure you want to delete this item?')) {
+      return
+    }
+
+    try {
+      setError('')
+      await axios.delete(`${API_BASE_URL}/products/${id}`)
+      await fetchInventory()
+    } catch (err) {
+      console.error('Error deleting item:', err)
+      setError('Failed to delete item. Please try again.')
     }
   }
 
@@ -890,13 +895,12 @@ function App() {
 
   // Generate calendar days
   const calendarDays = []
-  const weekDays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
-  
-  // Adjust for Sunday-first week (0 = Sunday)
+  const weekDays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
+
   for (let i = 0; i < firstDayOfMonth; i++) {
     calendarDays.push(null)
   }
-  
+
   for (let day = 1; day <= daysInMonth; day++) {
     calendarDays.push(day)
   }
@@ -986,19 +990,13 @@ function App() {
         <div className="top-bar-left">
           <div className="top-logo">
             <div className="top-logo-icon"><FaBox /></div>
-            <span className="top-logo-text">Inventory Manager</span>
+            <span className="top-logo-text">Inventory</span>
           </div>
         </div>
         <div className="top-bar-center">
           <div className="top-search">
             <FaSearch className="search-icon" />
-            <input 
-              type="text" 
-              placeholder="Search items..." 
-              className="top-search-input" 
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-            />
+            <input type="text" placeholder="Search" className="top-search-input" />
           </div>
         </div>
         <div className="top-bar-right">
@@ -1012,75 +1010,220 @@ function App() {
 
       {/* Left Sidebar - Hidden on Mobile */}
       <aside className={`sidebar ${sidebarCollapsed ? 'collapsed' : ''} ${isMobile ? 'mobile-hidden' : ''}`}>
-        <button 
+        <button
           className="sidebar-toggle"
           onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
           title={sidebarCollapsed ? 'Expand Sidebar' : 'Collapse Sidebar'}
         >
           {sidebarCollapsed ? <FaChevronRight /> : <FaChevronLeft />}
         </button>
-
+        {!sidebarCollapsed && (
+          <div>
+          </div>
+        )}
         <nav className="sidebar-nav">
-          {[
-            { id: 'Dashboard', icon: <FaChartBar /> },
-            { id: 'All Items', icon: <FaList /> },
-            { id: 'Low Stock', icon: <FaExclamationTriangle /> },
-            { id: 'Suppliers', icon: <FaBuilding /> },
-            { id: 'Reports', icon: <FaChartLine /> },
-            { id: 'Settings', icon: <FaCog /> }
-          ].map(item => (
-            <button
-              key={item.id}
-              className={`nav-item ${activeNav === item.id ? 'active' : ''}`}
-              onClick={() => setActiveNav(item.id)}
-            >
-              <span className="nav-icon">{item.icon}</span>
-              {!sidebarCollapsed && <span className="nav-text">{item.id}</span>}
-            </button>
-          ))}
+          <button
+            className={`nav-item ${activeNav === 'Dashboard' ? 'active' : ''}`}
+            onClick={() => {
+              setActiveNav('Dashboard')
+              if (isMobile) setSidebarCollapsed(true)
+            }}
+          >
+            <span className="nav-icon"><FaChartBar /></span>
+            <span className="nav-text">Dashboard</span>
+          </button>
+          <button
+            className={`nav-item ${activeNav === 'All Items' ? 'active' : ''}`}
+            onClick={() => {
+              setActiveNav('All Items')
+              if (isMobile) setSidebarCollapsed(true)
+            }}
+          >
+            <span className="nav-icon"><FaList /></span>
+            <span className="nav-text">All Items</span>
+          </button>
+          <button
+            className={`nav-item ${activeNav === 'Low Stock' ? 'active' : ''}`}
+            onClick={() => {
+              setActiveNav('Low Stock')
+              if (isMobile) setSidebarCollapsed(true)
+            }}
+          >
+            <span className="nav-icon"><FaExclamationTriangle /></span>
+            <span className="nav-text">Low Stock</span>
+          </button>
+          <button
+            className={`nav-item ${activeNav === 'Suppliers' ? 'active' : ''}`}
+            onClick={() => {
+              setActiveNav('Suppliers')
+              if (isMobile) setSidebarCollapsed(true)
+            }}
+          >
+            <span className="nav-icon"><FaBuilding /></span>
+            <span className="nav-text">Suppliers</span>
+          </button>
+          <button
+            className={`nav-item ${activeNav === 'Reports' ? 'active' : ''}`}
+            onClick={() => {
+              setActiveNav('Reports')
+              if (isMobile) setSidebarCollapsed(true)
+            }}
+          >
+            <span className="nav-icon"><FaChartLine /></span>
+            <span className="nav-text">Reports</span>
+          </button>
+          <button
+            className={`nav-item ${activeNav === 'Settings' ? 'active' : ''}`}
+            onClick={() => {
+              setActiveNav('Settings')
+              if (isMobile) setSidebarCollapsed(true)
+            }}
+          >
+            <span className="nav-icon"><FaCog /></span>
+            <span className="nav-text">Settings</span>
+          </button>
         </nav>
       </aside>
 
-      {/* Mobile Bottom Navigation */}
+      {/* Main Content */}
+      <main className={`main-content ${sidebarCollapsed ? 'sidebar-collapsed' : ''} ${isMobile ? 'mobile-content' : ''}`}>
+        {loading ? (
+          <div className="loading-state">
+            <p>{error || 'Loading inventory...'}</p>
+            <div className="spinner"></div>
+          </div>
+        ) : (
+          renderPage()
+        )}
+      </main>
+
+      {/* Bottom Navigation Bar for Mobile */}
       {isMobile && (
-        <nav className="mobile-bottom-nav">
-          {[
-            { id: 'Dashboard', icon: <FaChartBar /> },
-            { id: 'All Items', icon: <FaList /> },
-            { id: 'Low Stock', icon: <FaExclamationTriangle /> },
-            { id: 'Suppliers', icon: <FaBuilding /> },
-            { id: 'Reports', icon: <FaChartLine /> }
-          ].map(item => (
-            <button
-              key={item.id}
-              className={`mobile-nav-item ${activeNav === item.id ? 'active' : ''}`}
-              onClick={() => setActiveNav(item.id)}
-            >
-              <span className="mobile-nav-icon">{item.icon}</span>
-              <span className="mobile-nav-text">{item.id}</span>
-            </button>
-          ))}
+        <nav className="bottom-nav">
+          <button
+            className={`bottom-nav-item ${activeNav === 'Dashboard' ? 'active' : ''}`}
+            onClick={() => setActiveNav('Dashboard')}
+            title="Dashboard"
+          >
+            <span className="bottom-nav-icon"><FaChartBar /></span>
+            <span className="bottom-nav-label">Dashboard</span>
+          </button>
+          <button
+            className={`bottom-nav-item ${activeNav === 'All Items' ? 'active' : ''}`}
+            onClick={() => setActiveNav('All Items')}
+            title="All Items"
+          >
+            <span className="bottom-nav-icon"><FaList /></span>
+            <span className="bottom-nav-label">All Items</span>
+          </button>
+          <button
+            className={`bottom-nav-item ${activeNav === 'Low Stock' ? 'active' : ''}`}
+            onClick={() => setActiveNav('Low Stock')}
+            title="Low Stock"
+          >
+            <span className="bottom-nav-icon"><FaExclamationTriangle /></span>
+            <span className="bottom-nav-label">Low Stock</span>
+          </button>
+          <button
+            className={`bottom-nav-item ${activeNav === 'Suppliers' ? 'active' : ''}`}
+            onClick={() => setActiveNav('Suppliers')}
+            title="Suppliers"
+          >
+            <span className="bottom-nav-icon"><FaBuilding /></span>
+            <span className="bottom-nav-label">Suppliers</span>
+          </button>
+          <button
+            className={`bottom-nav-item ${activeNav === 'Reports' ? 'active' : ''}`}
+            onClick={() => setActiveNav('Reports')}
+            title="Reports"
+          >
+            <span className="bottom-nav-icon"><FaChartLine /></span>
+            <span className="bottom-nav-label">Reports</span>
+          </button>
+          <button
+            className={`bottom-nav-item ${activeNav === 'Settings' ? 'active' : ''}`}
+            onClick={() => setActiveNav('Settings')}
+            title="Settings"
+          >
+            <span className="bottom-nav-icon"><FaCog /></span>
+            <span className="bottom-nav-label">Settings</span>
+          </button>
         </nav>
       )}
 
-      {/* Main Content */}
-      <main className={`main-content ${sidebarCollapsed ? 'sidebar-collapsed' : ''} ${isMobile ? 'mobile' : ''}`}>
-        {renderPage()}
-      </main>
+      {/* Right Sidebar */}
+      <aside className="right-sidebar">
+        <div className="calendar-widget">
+          <div className="calendar-header">
+            <button className="calendar-nav"><FaChevronLeft /></button>
+            <h3>{currentMonth}</h3>
+            <button className="calendar-nav"><FaChevronRight /></button>
+          </div>
+          <div className="calendar-grid">
+            {weekDays.map(day => (
+              <div key={day} className="calendar-weekday">{day}</div>
+            ))}
+            {calendarDays.map((day, index) => (
+              <div
+                key={index}
+                className={`calendar-day ${day === currentDate.getDate() ? 'today' : ''}`}
+              >
+                {day}
+              </div>
+            ))}
+          </div>
+        </div>
 
-      {/* Add/Edit Item Modal */}
+        {/* <div className="recent-activity">
+          <div className="activity-header">
+            <h3>Recent Items</h3>
+            <a href="#" className="see-all">See all</a>
+          </div>
+          <div className="activity-list">
+            {recentItems.slice(0, 4).map(item => (
+              <div key={item.id} className="activity-item">
+                <div className="activity-avatar">{getCategoryIcon(item.category)}</div>
+                <div className="activity-info">
+                  <div className="activity-name">{item.name}</div>
+                  <div className="activity-id">ID: {item.id}</div>
+                </div>
+                <div className="activity-status"></div>
+              </div>
+            ))}
+          </div>
+        </div> */}
+
+        {/* <div className="stats-widget">
+          <div className="stat-widget-item">
+            <div className="stat-widget-value">{totalItems}</div>
+            <div className="stat-widget-label">Total Items</div>
+          </div>
+          <div className="stat-widget-item">
+            <div className="stat-widget-value">${(totalValue / 1000).toFixed(1)}K</div>
+            <div className="stat-widget-label">Total Value</div>
+          </div>
+          <div className="stat-widget-item">
+            <div className="stat-widget-value">{lowStockItems}</div>
+            <div className="stat-widget-label">Low Stock</div>
+          </div>
+        </div> */}
+      </aside>
+
+
+
+      {/* Modal for Add/Edit */}
       {isModalOpen && (
-        <div className="modal-overlay">
-          <div className="modal">
+        <div className="modal-overlay" onClick={() => setIsModalOpen(false)}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
               <h2>{editingItem ? 'Edit Item' : 'Add New Item'}</h2>
               <button className="modal-close" onClick={() => setIsModalOpen(false)}>
                 <FaTimes />
               </button>
             </div>
-            <form onSubmit={handleSubmit} className="modal-form">
+            <form onSubmit={handleSubmit} className="form">
               <div className="form-group">
-                <label>Item Name</label>
+                <label>Item Name *</label>
                 <input
                   type="text"
                   name="name"
@@ -1090,23 +1233,18 @@ function App() {
                 />
               </div>
               <div className="form-group">
-                <label>Category</label>
-                <select
+                <label>Category *</label>
+                <input
+                  type="text"
                   name="category"
                   value={formData.category}
                   onChange={handleInputChange}
                   required
-                >
-                  <option value="">Select Category</option>
-                  <option value="Electronics">Electronics</option>
-                  <option value="Furniture">Furniture</option>
-                  <option value="Accessories">Accessories</option>
-                  <option value="Other">Other</option>
-                </select>
+                />
               </div>
               <div className="form-row">
                 <div className="form-group">
-                  <label>Quantity</label>
+                  <label>Quantity *</label>
                   <input
                     type="number"
                     name="quantity"
@@ -1117,7 +1255,7 @@ function App() {
                   />
                 </div>
                 <div className="form-group">
-                  <label>Price ($)</label>
+                  <label>Price ($) *</label>
                   <input
                     type="number"
                     name="price"
@@ -1130,7 +1268,7 @@ function App() {
                 </div>
               </div>
               <div className="form-group">
-                <label>Supplier</label>
+                <label>Supplier *</label>
                 <input
                   type="text"
                   name="supplier"
@@ -1148,12 +1286,19 @@ function App() {
                   rows="3"
                 />
               </div>
-              <div className="modal-actions">
-                <button type="button" className="btn-cancel" onClick={() => setIsModalOpen(false)}>
+              <div className="form-actions">
+                <button
+                  type="button"
+                  className="btn-cancel"
+                  onClick={() => {
+                    setIsModalOpen(false)
+                    resetForm()
+                  }}
+                >
                   Cancel
                 </button>
-                <button type="submit" className="btn-save">
-                  {editingItem ? 'Update Item' : 'Add Item'}
+                <button type="submit" className="btn-submit">
+                  {editingItem ? 'Update' : 'Add'} Item
                 </button>
               </div>
             </form>
