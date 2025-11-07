@@ -1,0 +1,83 @@
+[
+  {
+    "id": 1,
+    "name": "Laptop Pro 15",
+    "category": "Electronics",
+    "quantity": 25,
+    "price": 1299.99,
+    "supplier": "TechCorp Inc.",
+    "description": "High-performance laptop with 16GB RAM and 512GB SSD",
+    "lastUpdated": "2024-01-15"
+  },
+  {
+    "id": 2,
+    "name": "Wireless Mouse",
+    "category": "Accessories",
+    "quantity": 150,
+    "price": 29.99,
+    "supplier": "Peripheral Solutions",
+    "description": "Ergonomic wireless mouse with long battery life",
+    "lastUpdated": "2024-01-14"
+  },
+  {
+    "id": 3,
+    "name": "Mechanical Keyboard",
+    "category": "Accessories",
+    "quantity": 80,
+    "price": 89.99,
+    "supplier": "KeyTech Industries",
+    "description": "RGB mechanical keyboard with Cherry MX switches",
+    "lastUpdated": "2024-01-13"
+  },
+  {
+    "id": 4,
+    "name": "4K Monitor 27\"",
+    "category": "Electronics",
+    "quantity": 45,
+    "price": 449.99,
+    "supplier": "DisplayMax Co.",
+    "description": "Ultra HD 4K monitor with HDR support",
+    "lastUpdated": "2024-01-12"
+  },
+  {
+    "id": 5,
+    "name": "USB-C Hub",
+    "category": "Accessories",
+    "quantity": 200,
+    "price": 39.99,
+    "supplier": "ConnectPro Ltd.",
+    "description": "Multi-port USB-C hub with HDMI and SD card reader",
+    "lastUpdated": "2024-01-11"
+  },
+  {
+    "id": 6,
+    "name": "Webcam HD",
+    "category": "Electronics",
+    "quantity": 60,
+    "price": 79.99,
+    "supplier": "VisionTech Systems",
+    "description": "1080p HD webcam with built-in microphone",
+    "lastUpdated": "2024-01-10"
+  },
+  {
+    "id": 7,
+    "name": "Desk Stand",
+    "category": "Furniture",
+    "quantity": 30,
+    "price": 59.99,
+    "supplier": "ErgoDesign Works",
+    "description": "Adjustable desk stand for monitors and laptops",
+    "lastUpdated": "2024-01-09"
+  },
+  {
+    "id": 8,
+    "name": "Noise-Cancelling Headphones",
+    "category": "Electronics",
+    "quantity": 40,
+    "price": 199.99,
+    "supplier": "AudioPro Inc.",
+    "description": "Premium wireless headphones with active noise cancellation",
+    "lastUpdated": "2024-01-08"
+  }
+]
+
