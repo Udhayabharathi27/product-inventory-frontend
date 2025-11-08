@@ -586,6 +586,10 @@ function LowStockPage({ inventory, handleEdit, handleDelete, getCategoryIcon }) 
 
 // Reports Page
 function ReportsPage({ inventory, totalItems, totalValue }) {
+  const totalQuantity = inventory.reduce((sum, item) => sum + item.quantity, 0)
+  const averageItemValue = totalItems > 0 ? totalValue / totalItems : 0
+  const averageUnitPrice = totalQuantity > 0 ? totalValue / totalQuantity : 0
+
   return (
     <div className="reports-page">
       <div className="page-title-section">
@@ -608,8 +612,12 @@ function ReportsPage({ inventory, totalItems, totalValue }) {
               <strong>${totalValue.toLocaleString('en-US', { minimumFractionDigits: 2 })}</strong>
             </div>
             <div className="report-item">
-              <span>Average Item Price:</span>
-              <strong>${(totalValue / totalItems / inventory.reduce((sum, item) => sum + item.quantity, 0)).toFixed(2)}</strong>
+              <span>Average Item Value:</span>
+              <strong>${averageItemValue.toFixed(2)}</strong>
+            </div>
+            <div className="report-item">
+              <span>Average Unit Price:</span>
+              <strong>${averageUnitPrice.toFixed(2)}</strong>
             </div>
           </div>
         </div>
@@ -950,19 +958,18 @@ function App() {
   // Render current page based on activeNav
   const renderPage = () => {
     switch (activeNav) {
-     // In the renderPage() function in the App component:
-case 'Dashboard':
-  return (
-    <DashboardPage
-      inventory={inventory}
-      totalItems={totalItems}
-      totalValue={totalValue}
-      lowStockItems={lowStockItems}
-      recentItems={recentItems}
-      getCategoryIcon={getCategoryIcon}
-      handleAdd={handleAdd}
-    />
-  )
+      case 'Dashboard':
+        return (
+          <DashboardPage
+            inventory={inventory}
+            totalItems={totalItems}
+            totalValue={totalValue}
+            lowStockItems={lowStockItems}
+            recentItems={recentItems}
+            getCategoryIcon={getCategoryIcon}
+            handleAdd={handleAdd}
+          />
+        )
       case 'All Items':
         return (
           <AllItemsPage
@@ -999,14 +1006,14 @@ case 'Dashboard':
         )
       // case 'Suppliers':
       //   return <SuppliersPage inventory={inventory} />
-      // case 'Reports':
-      //   return (
-      //     <ReportsPage
-      //       inventory={inventory}
-      //       totalItems={totalItems}
-      //       totalValue={totalValue}
-      //     />
-      //   )
+      case 'Reports':
+        return (
+          <ReportsPage
+            inventory={inventory}
+            totalItems={totalItems}
+            totalValue={totalValue}
+          />
+        )
       case 'Settings':
         return <SettingsPage />
       default:
@@ -1109,8 +1116,6 @@ case 'Dashboard':
           {NAV_ITEMS.map(item => {
             const Icon = item.icon
             const isActive = activeNav === item.key
-            const baseColor = item.color
-            const inactiveColor = `${baseColor}99`
             return (
               <button
                 key={item.key}
@@ -1118,16 +1123,10 @@ case 'Dashboard':
                 onClick={() => setActiveNav(item.key)}
                 title={item.label}
               >
-                <span
-                  className="bottom-nav-icon"
-                  style={{ color: isActive ? baseColor : inactiveColor }}
-                >
+                <span className="bottom-nav-icon">
                   <Icon />
                 </span>
-                <span
-                  className="bottom-nav-label"
-                  style={{ color: isActive ? baseColor : inactiveColor }}
-                >
+                <span className="bottom-nav-label">
                   {item.label}
                 </span>
               </button>
