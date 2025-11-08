@@ -27,7 +27,9 @@ import {
   FaKeyboard,
   FaChair,
   FaTimes,
-  FaInbox
+  FaInbox,
+  FaArrowUp,
+  FaArrowDown
 } from 'react-icons/fa'
 
 const API_BASE_URL = 'https://product-inventory-backend-eg9l.onrender.com/api'
@@ -36,13 +38,13 @@ const NAV_ITEMS = [
   { key: 'Dashboard', label: 'Dashboard', icon: FaChartBar, color: '#6366f1' },
   { key: 'All Items', label: 'All Items', icon: FaList, color: '#0ea5e9' },
   { key: 'Low Stock', label: 'Low Stock', icon: FaExclamationTriangle, color: '#f97316' },
-  { key: 'Suppliers', label: 'Suppliers', icon: FaBuilding, color: '#14b8a6' },
+  // { key: 'Suppliers', label: 'Suppliers', icon: FaBuilding, color: '#14b8a6' },
   { key: 'Reports', label: 'Reports', icon: FaChartLine, color: '#22c55e' },
   { key: 'Settings', label: 'Settings', icon: FaCog, color: '#8b5cf6' }
 ]
 
 // Dashboard Component with Graphs
-function DashboardPage({ inventory, totalItems, totalValue, lowStockItems, recentItems, getCategoryIcon }) {
+function DashboardPage({ inventory, totalItems, totalValue, lowStockItems, recentItems, getCategoryIcon, handleAdd }) {
   // Calculate data for charts
   const categoryData = inventory.reduce((acc, item) => {
     acc[item.category] = (acc[item.category] || 0) + 1
@@ -65,50 +67,83 @@ function DashboardPage({ inventory, totalItems, totalValue, lowStockItems, recen
     high: inventory.filter(item => item.quantity >= 50).length
   }
 
-  const inStockItems = inventory.filter(item => item.quantity >= 20).length
   const mediumStock = inventory.filter(item => item.quantity >= 20 && item.quantity < 50).length
   const highStock = inventory.filter(item => item.quantity >= 50).length
+  const safeTotalItems = totalItems || 1
+
+  const createTrend = (items, isPositive = true) => {
+    const percent = Math.min(99, Math.max(3, Math.round((items / safeTotalItems) * 100)))
+    return {
+      direction: isPositive ? 'up' : 'down',
+      label: `${isPositive ? '+' : '-'}${percent}% vs last month`
+    }
+  }
+
+  const summaryStats = [
+    {
+      key: 'medium-stock',
+      label: 'Medium Stock',
+      className: 'unpaid',
+      icon: <FaClock />,
+      items: mediumStock,
+      value: `$${(inventory.filter(item => item.quantity >= 20 && item.quantity < 50).reduce((sum, item) => sum + (item.price * item.quantity), 0) / 1000).toFixed(1)}K`,
+      trend: createTrend(mediumStock, true)
+    },
+    {
+      key: 'low-stock',
+      label: 'Low Stock',
+      className: 'overdue',
+      icon: <FaExclamationTriangle />,
+      items: lowStockItems,
+      value: `$${(inventory.filter(item => item.quantity < 20).reduce((sum, item) => sum + (item.price * item.quantity), 0) / 1000).toFixed(1)}K`,
+      trend: createTrend(lowStockItems, false)
+    },
+    {
+      key: 'total-items',
+      label: 'Total Items',
+      className: 'draft',
+      icon: <FaBox />,
+      items: totalItems,
+      value: `$${(totalValue / 1000).toFixed(1)}K`,
+      trend: createTrend(totalItems, true)
+    }
+  ]
 
   return (
     <div className="dashboard-page">
-        <div className="page-title-section">
+      <div className="page-title-section">
+        <div>
           <h1>Inventory</h1>
           <div className="breadcrumb">General {'>'} All Inventory</div>
         </div>
+        <button className="btn-create" onClick={handleAdd}>
+          + Create Item
+        </button>
+      </div>
 
       <div className="summary-cards">
-        <div className="summary-card paid">
-          <div className="summary-card-icon"><FaCheck /></div>
-          <div className="summary-card-content">
-            <div className="summary-card-label">In Stock</div>
-            <div className="summary-card-value">Items: {inStockItems}</div>
-            <div className="summary-card-amount">Value: ${(inventory.filter(item => item.quantity >= 20).reduce((sum, item) => sum + (item.price * item.quantity), 0) / 1000).toFixed(1)}K</div>
+        {summaryStats.map(stat => (
+          <div key={stat.key} className={`summary-card ${stat.className}`}>
+            <div className="summary-card-top">
+              <div className="summary-card-label">{stat.label}</div>
+              <div className="summary-card-icon-badge">{stat.icon}</div>
+            </div>
+            <div className="summary-card-main">
+              <div className="summary-card-metric">
+                <div className="summary-card-metric-value">{stat.items}</div>
+                <div className="summary-card-metric-caption">Items</div>
+              </div>
+              <div className="summary-card-metric">
+                <div className="summary-card-metric-value">{stat.value}</div>
+                <div className="summary-card-metric-caption">Value</div>
+              </div>
+            </div>
+            <div className={`summary-card-trend ${stat.trend.direction}`}>
+              {stat.trend.direction === 'up' ? <FaArrowUp /> : <FaArrowDown />}
+              <span>{stat.trend.label}</span>
+            </div>
           </div>
-        </div>
-        <div className="summary-card unpaid">
-          <div className="summary-card-icon"><FaClock /></div>
-          <div className="summary-card-content">
-            <div className="summary-card-label">Medium Stock</div>
-            <div className="summary-card-value">Items: {mediumStock}</div>
-            <div className="summary-card-amount">Value: ${(inventory.filter(item => item.quantity >= 20 && item.quantity < 50).reduce((sum, item) => sum + (item.price * item.quantity), 0) / 1000).toFixed(1)}K</div>
-          </div>
-        </div>
-        <div className="summary-card overdue">
-          <div className="summary-card-icon"><FaExclamationTriangle /></div>
-          <div className="summary-card-content">
-            <div className="summary-card-label">Low Stock</div>
-            <div className="summary-card-value">Items: {lowStockItems}</div>
-            <div className="summary-card-amount">Value: ${(inventory.filter(item => item.quantity < 20).reduce((sum, item) => sum + (item.price * item.quantity), 0) / 1000).toFixed(1)}K</div>
-          </div>
-        </div>
-        <div className="summary-card draft">
-          <div className="summary-card-icon"><FaBox /></div>
-          <div className="summary-card-content">
-            <div className="summary-card-label">Total Items</div>
-            <div className="summary-card-value">Items: {totalItems}</div>
-            <div className="summary-card-amount">Value: ${(totalValue / 1000).toFixed(1)}K</div>
-          </div>
-        </div>
+        ))}
       </div>
 
       <div className="charts-grid">
@@ -119,13 +154,13 @@ function DashboardPage({ inventory, totalItems, totalValue, lowStockItems, recen
               <div key={category} className="bar-chart-item">
                 <div className="bar-label">{category}</div>
                 <div className="bar-container">
-                  <div
-                    className="bar-fill"
-                    style={{
-                      width: `${(categoryCounts[index] / maxCount) * 100}%`,
-                      background: `linear-gradient(90deg, #7C3AED 0%, #6B46C1 100%)`
-                    }}
-                  >
+                  <div className="bar-track">
+                    <div
+                      className="bar-fill"
+                      style={{
+                        width: `${(categoryCounts[index] / maxCount) * 100}%`
+                      }}
+                    />
                     <span className="bar-value">{categoryCounts[index]}</span>
                   </div>
                 </div>
@@ -251,6 +286,7 @@ function DashboardPage({ inventory, totalItems, totalValue, lowStockItems, recen
 }
 
 // All Items Page with List/Table View
+// All Items Page with List/Table View
 function AllItemsPage({
   inventory,
   paginatedInventory,
@@ -342,14 +378,13 @@ function AllItemsPage({
               <th>Category</th>
               <th>Qty</th>
               <th>Price</th>
-              <th>Total Value</th>
               <th>Actions</th>
             </tr>
           </thead>
           <tbody>
             {paginatedInventory.length === 0 ? (
               <tr>
-                <td colSpan="7" className="no-data-cell">
+                <td colSpan="6" className="no-data-cell">
                   <div className="no-data-message">
                     <FaInbox className="no-data-icon" />
                     <p>No items found</p>
@@ -375,7 +410,6 @@ function AllItemsPage({
                     </span>
                   </td>
                   <td>${item.price.toFixed(2)}</td>
-                  <td>${(item.price * item.quantity).toFixed(2)}</td>
                   <td>
                     <div className="table-actions">
                       <button className="btn-edit-small" onClick={() => handleEdit(item)} title="Edit">
@@ -458,7 +492,6 @@ function AllItemsPage({
     </div>
   )
 }
-
 // Low Stock Page
 function LowStockPage({ inventory, handleEdit, handleDelete, getCategoryIcon }) {
   const lowStockItems = inventory.filter(item => item.quantity < 20)
@@ -508,48 +541,48 @@ function LowStockPage({ inventory, handleEdit, handleDelete, getCategoryIcon }) 
 }
 
 // Suppliers Page
-function SuppliersPage({ inventory }) {
-  const suppliers = [...new Set(inventory.map(item => item.supplier))]
-  const supplierData = suppliers.map(supplier => {
-    const items = inventory.filter(item => item.supplier === supplier)
-    const totalValue = items.reduce((sum, item) => sum + (item.price * item.quantity), 0)
-    return {
-      name: supplier,
-      itemCount: items.length,
-      totalValue
-    }
-  })
+// function SuppliersPage({ inventory }) {
+//   const suppliers = [...new Set(inventory.map(item => item.supplier))]
+//   const supplierData = suppliers.map(supplier => {
+//     const items = inventory.filter(item => item.supplier === supplier)
+//     const totalValue = items.reduce((sum, item) => sum + (item.price * item.quantity), 0)
+//     return {
+//       name: supplier,
+//       itemCount: items.length,
+//       totalValue
+//     }
+//   })
 
-  return (
-    <div className="suppliers-page">
-      <div className="page-title-section">
-        <div>
-          <h1>Suppliers</h1>
-          <div className="breadcrumb">General {'>'} Suppliers</div>
-        </div>
-      </div>
+//   return (
+//     <div className="suppliers-page">
+//       <div className="page-title-section">
+//         <div>
+//           <h1>Suppliers</h1>
+//           <div className="breadcrumb">General {'>'} Suppliers</div>
+//         </div>
+//       </div>
 
-      <div className="suppliers-grid">
-        {supplierData.map((supplier, index) => (
-          <div key={index} className="supplier-card">
-            <div className="supplier-avatar"><FaBuilding /></div>
-            <h3>{supplier.name}</h3>
-            <div className="supplier-stats">
-              <div className="supplier-stat">
-                <span className="stat-label">Items</span>
-                <span className="stat-value">{supplier.itemCount}</span>
-              </div>
-              <div className="supplier-stat">
-                <span className="stat-label">Total Value</span>
-                <span className="stat-value">${(supplier.totalValue / 1000).toFixed(1)}K</span>
-              </div>
-            </div>
-          </div>
-        ))}
-      </div>
-    </div>
-  )
-}
+//       <div className="suppliers-grid">
+//         {supplierData.map((supplier, index) => (
+//           <div key={index} className="supplier-card">
+//             <div className="supplier-avatar"><FaBuilding /></div>
+//             <h3>{supplier.name}</h3>
+//             <div className="supplier-stats">
+//               <div className="supplier-stat">
+//                 <span className="stat-label">Items</span>
+//                 <span className="stat-value">{supplier.itemCount}</span>
+//               </div>
+//               <div className="supplier-stat">
+//                 <span className="stat-label">Total Value</span>
+//                 <span className="stat-value">${(supplier.totalValue / 1000).toFixed(1)}K</span>
+//               </div>
+//             </div>
+//           </div>
+//         ))}
+//       </div>
+//     </div>
+//   )
+// }
 
 // Reports Page
 function ReportsPage({ inventory, totalItems, totalValue }) {
@@ -655,7 +688,7 @@ function App() {
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [editingItem, setEditingItem] = useState(null)
   const [activeNav, setActiveNav] = useState('Dashboard')
-  const [theme, setTheme] = useState('light')
+  const [theme, setTheme] = useState('dark')
   const [formData, setFormData] = useState({
     name: '',
     category: '',
@@ -917,17 +950,19 @@ function App() {
   // Render current page based on activeNav
   const renderPage = () => {
     switch (activeNav) {
-      case 'Dashboard':
-        return (
-          <DashboardPage
-            inventory={inventory}
-            totalItems={totalItems}
-            totalValue={totalValue}
-            lowStockItems={lowStockItems}
-            recentItems={recentItems}
-            getCategoryIcon={getCategoryIcon}
-          />
-        )
+     // In the renderPage() function in the App component:
+case 'Dashboard':
+  return (
+    <DashboardPage
+      inventory={inventory}
+      totalItems={totalItems}
+      totalValue={totalValue}
+      lowStockItems={lowStockItems}
+      recentItems={recentItems}
+      getCategoryIcon={getCategoryIcon}
+      handleAdd={handleAdd}
+    />
+  )
       case 'All Items':
         return (
           <AllItemsPage
@@ -962,16 +997,16 @@ function App() {
             getCategoryIcon={getCategoryIcon}
           />
         )
-      case 'Suppliers':
-        return <SuppliersPage inventory={inventory} />
-      case 'Reports':
-        return (
-          <ReportsPage
-            inventory={inventory}
-            totalItems={totalItems}
-            totalValue={totalValue}
-          />
-        )
+      // case 'Suppliers':
+      //   return <SuppliersPage inventory={inventory} />
+      // case 'Reports':
+      //   return (
+      //     <ReportsPage
+      //       inventory={inventory}
+      //       totalItems={totalItems}
+      //       totalValue={totalValue}
+      //     />
+      //   )
       case 'Settings':
         return <SettingsPage />
       default:
@@ -999,7 +1034,7 @@ function App() {
         <div className="top-bar-left">
           <div className="top-logo">
             <div className="top-logo-icon"><FaBox /></div>
-            <span className="top-logo-text">Inventory</span>
+            <span className="top-logo-text">Product Inventory Management</span>
           </div>
         </div>
         <div className="top-bar-center">
@@ -1216,25 +1251,6 @@ function App() {
                     required
                   />
                 </div>
-              </div>
-              <div className="form-group">
-                <label>Supplier *</label>
-                <input
-                  type="text"
-                  name="supplier"
-                  value={formData.supplier}
-                  onChange={handleInputChange}
-                  required
-                />
-              </div>
-              <div className="form-group">
-                <label>Description</label>
-                <textarea
-                  name="description"
-                  value={formData.description}
-                  onChange={handleInputChange}
-                  rows="3"
-                />
               </div>
               <div className="form-actions">
                 <button
